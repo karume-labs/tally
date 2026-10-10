@@ -1,0 +1,4 @@
+# Bun's test runner walks the whole tree by default. Scoping the root to `src`
+# keeps `bun test` a check of this project's tests.
+[test]
+root = "src"
