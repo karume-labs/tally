@@ -14,7 +14,7 @@ what this project adds on top.
 2. `.agents/rules/AGENT-USAGE.md` — how agents apply the rules.
 3. The always-on set:
    - `GENERAL.md` — arrow functions, named exports, ~150-line cap, absolute
-     `@/` imports, no emojis in UI, no gradients, comments explain *why*.
+     `@/` imports, no emojis in UI, no gradients, comments explain _why_.
    - `NAMING.md` — kebab-case folders/files, PascalCase component files whose
      export matches the filename, single-file folders collapse to `constants.ts`.
    - `FEATURE-FOLDER.md` — group by domain
@@ -50,33 +50,33 @@ ones that actually govern Tally. Rules that are web/Next.js/Elysia/oRPC-specific
 and not applicable are present in the mirror for completeness but are **not** in
 force.
 
-| Rule | Status | What it means in this repo |
-| --- | --- | --- |
-| `GENERAL.md` | **in force** | Arrow functions with named exports. ~150-line hard cap per file. Absolute `@/` imports, never `../../`. Comments explain *why*, not history. No emojis in UI. No gradients. |
-| `NAMING.md` | **in force** | kebab-case folders and non-component files, PascalCase component files whose export matches the filename. Single-file folders collapse to `constants.ts`. |
-| `FEATURE-FOLDER.md` | **in force** | Grouped by domain (`src/features/<domain>/{components,hooks,services}`), not by technical layer. Cross-cutting primitives in `src/shared/`. |
-| `FALLBACKS.md` | **in force** | No `??`/`||`/`as` on values the type system already guarantees. Defaults live in the schema or the query builder, not at the read site. |
-| `TOOLING.md` | **in force** | Biome for lint + format, `tsc` for types, Bun as the runner. Finish with `bun run format`, `bun run lint`, `bun run typecheck`. Lefthook pre-commit runs biome + typecheck. |
-| `ENV-VARS.md` | **in force (adapted)** | `process.env` is confined to one validated `env` module. Tally is offline-first and has no server env, so the rule collapses to: keep any `process.env` reads in one place and never scatter them. |
-| `REACT-NATIVE.md` | **in force** | **Never edit `android/` or `ios/` directly.** Native config goes through `app.json` or a config plugin in `plugins/`. |
-| `REACT-NATIVE-REUSABLES.md` | **in force** | Generated `components/ui/` primitives are read-only. Extend via wrapper components or new CVA variants, not by patching generated source. |
-| `STYLING.md` | **in force** | The UI library owns styling. No inline `style` overrides to fight the framework. |
-| `DRIZZLE.md` | **in force (adapted)** | Drizzle ORM for SQLite via expo-sqlite. Single `src/db/client.ts`, tables in `src/db/schema.ts` only, migrations in `src/db/migrations/`. The pg-specific bits (uuid, lifecycleTimestamps, decimal money) do not apply; Tally uses `text` PKs + `integer`/`real` columns. |
-| `SEEDING.md` | **in force (adapted)** | Seeding is a db concern isolated from app code. `src/db/seed.ts` is the single seed entry. Idempotent via `onConflictDoNothing` / name-based skips. |
-| `VALIDATION.md` | **in force (adapted)** | Tally has no Elysia server, so TypeBox is not in play. Use Zod for app-side validation where needed; the Drizzle schema is the source of truth for persisted data. |
-| `SHADCN.md` | **in force** | shadcn/ui primitives in `components/ui/` are read-only. Compose via props/variants, not className overrides. `cn`/`cva`/`tailwind-merge` are the sanctioned mechanism. |
-| `TESTING.md` | **in force** | Testing is expected; the org rule's current note is "I'll get to this once I get a method of testing that I like." Tally should treat tests as first-class once a testing approach is chosen. |
-| `AGENT-USAGE.md` | **in force** | How agents load and apply these rules. |
-| `API-CONTRACT.md` | not applicable | No API server in Tally; offline-first local DB. |
-| `ORPC.md` | not applicable | No oRPC in Tally. |
-| `ELYSIA-EDEN.md` | not applicable | No Elysia/Eden server in Tally. |
-| `NEXTJS.md` | not applicable | Tally is Expo, not Next.js. |
-| `DATA-FETCHING.md` | not applicable | No TanStack Query; Tally reads/writes local SQLite directly via Drizzle. |
-| `DATA-TABLES.md` | not applicable | No TanStack Table in Tally. |
-| `SEO.md` | not applicable | Mobile app; no SEO. |
-| `AUTH.md` | not applicable | No Better Auth / server session in Tally. |
-| `MANTINE.md` | not applicable | Tally uses shadcn/ui style, not Mantine. |
-| `SKILL-CREATION.md` | not applicable | Not relevant to this repo. |
+| Rule                        | Status                 | What it means in this repo                                                                                                                                                                                                                                                |
+| --------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GENERAL.md`                | **in force**           | Arrow functions with named exports. ~150-line hard cap per file. Absolute `@/` imports, never `../../`. Comments explain _why_, not history. No emojis in UI. No gradients.                                                                                               |
+| `NAMING.md`                 | **in force**           | kebab-case folders and non-component files, PascalCase component files whose export matches the filename. Single-file folders collapse to `constants.ts`.                                                                                                                 |
+| `FEATURE-FOLDER.md`         | **in force**           | Grouped by domain (`src/features/<domain>/{components,hooks,services}`), not by technical layer. Cross-cutting primitives in `src/shared/`.                                                                                                                               |
+| `FALLBACKS.md`              | **in force**           | No `??`/`                                                                                                                                                                                                                                                                 |     | `/`as` on values the type system already guarantees. Defaults live in the schema or the query builder, not at the read site. |
+| `TOOLING.md`                | **in force**           | Biome for lint + format, `tsc` for types, Bun as the runner. Finish with `bun run format`, `bun run lint`, `bun run typecheck`. Lefthook pre-commit runs biome + typecheck.                                                                                               |
+| `ENV-VARS.md`               | **in force (adapted)** | `process.env` is confined to one validated `env` module. Tally is offline-first and has no server env, so the rule collapses to: keep any `process.env` reads in one place and never scatter them.                                                                        |
+| `REACT-NATIVE.md`           | **in force**           | **Never edit `android/` or `ios/` directly.** Native config goes through `app.json` or a config plugin in `plugins/`.                                                                                                                                                     |
+| `REACT-NATIVE-REUSABLES.md` | **in force**           | Generated `components/ui/` primitives are read-only. Extend via wrapper components or new CVA variants, not by patching generated source.                                                                                                                                 |
+| `STYLING.md`                | **in force**           | The UI library owns styling. No inline `style` overrides to fight the framework.                                                                                                                                                                                          |
+| `DRIZZLE.md`                | **in force (adapted)** | Drizzle ORM for SQLite via expo-sqlite. Single `src/db/client.ts`, tables in `src/db/schema.ts` only, migrations in `src/db/migrations/`. The pg-specific bits (uuid, lifecycleTimestamps, decimal money) do not apply; Tally uses `text` PKs + `integer`/`real` columns. |
+| `SEEDING.md`                | **in force (adapted)** | Seeding is a db concern isolated from app code. `src/db/seed.ts` is the single seed entry. Idempotent via `onConflictDoNothing` / name-based skips.                                                                                                                       |
+| `VALIDATION.md`             | **in force (adapted)** | Tally has no Elysia server, so TypeBox is not in play. Use Zod for app-side validation where needed; the Drizzle schema is the source of truth for persisted data.                                                                                                        |
+| `SHADCN.md`                 | **in force**           | shadcn/ui primitives in `components/ui/` are read-only. Compose via props/variants, not className overrides. `cn`/`cva`/`tailwind-merge` are the sanctioned mechanism.                                                                                                    |
+| `TESTING.md`                | **in force**           | Testing is expected; the org rule's current note is "I'll get to this once I get a method of testing that I like." Tally should treat tests as first-class once a testing approach is chosen.                                                                             |
+| `AGENT-USAGE.md`            | **in force**           | How agents load and apply these rules.                                                                                                                                                                                                                                    |
+| `API-CONTRACT.md`           | not applicable         | No API server in Tally; offline-first local DB.                                                                                                                                                                                                                           |
+| `ORPC.md`                   | not applicable         | No oRPC in Tally.                                                                                                                                                                                                                                                         |
+| `ELYSIA-EDEN.md`            | not applicable         | No Elysia/Eden server in Tally.                                                                                                                                                                                                                                           |
+| `NEXTJS.md`                 | not applicable         | Tally is Expo, not Next.js.                                                                                                                                                                                                                                               |
+| `DATA-FETCHING.md`          | not applicable         | No TanStack Query; Tally reads/writes local SQLite directly via Drizzle.                                                                                                                                                                                                  |
+| `DATA-TABLES.md`            | not applicable         | No TanStack Table in Tally.                                                                                                                                                                                                                                               |
+| `SEO.md`                    | not applicable         | Mobile app; no SEO.                                                                                                                                                                                                                                                       |
+| `AUTH.md`                   | not applicable         | No Better Auth / server session in Tally.                                                                                                                                                                                                                                 |
+| `MANTINE.md`                | not applicable         | Tally uses shadcn/ui style, not Mantine.                                                                                                                                                                                                                                  |
+| `SKILL-CREATION.md`         | not applicable         | Not relevant to this repo.                                                                                                                                                                                                                                                |
 
 ## This project adds
 
@@ -100,7 +100,7 @@ src/app/            expo-router routes (file = route)
 src/features/<d>/   domain slices: components, hooks, services
 src/shared/         cross-feature primitives, components, env, lib
 src/db/             schema, migrations, client, seed
-components/ui/      shadcn/ui primitives (read-only)
+src/components/ui/  shadcn/ui primitives (read-only)
 plugins/            expo config plugins (when native config is needed)
 .agents/            mirrored guardrails — do not hand-edit the rules in isolation
 ```

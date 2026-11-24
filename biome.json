@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.8/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -29,9 +29,6 @@
       "suspicious": {
         "noDeprecatedImports": "error",
         "noUnknownAtRules": "off"
-      },
-      "nursery": {
-        "useSortedClasses": "off"
       }
     },
     "domains": {
@@ -52,7 +49,7 @@
   },
   "overrides": [
     {
-      "includes": ["src/components/ui/**"],
+      "includes": ["components/ui/**", "src/components/ui/**"],
       "linter": {
         "enabled": false
       },

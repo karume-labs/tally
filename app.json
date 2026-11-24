@@ -7,24 +7,19 @@
     "icon": "./assets/images/icon.png",
     "scheme": "tally",
     "userInterfaceStyle": "automatic",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.tally.app"
+      "bundleIdentifier": "com.karume-labs.tally",
+      "userInterfaceStyle": "automatic"
     },
     "android": {
-      "package": "com.tally.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+        "backgroundColor": "#FFD340"
+      },
+      "package": "com.karume_labs.tally",
+      "userInterfaceStyle": "automatic"
     },
     "plugins": [
       "expo-router",
@@ -33,11 +28,14 @@
         {
           "image": "./assets/images/splash.png",
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#101113",
+          "dark": {
+            "image": "./assets/images/splash.png",
+            "backgroundColor": "#101113"
+          }
         }
       ],
-      "expo-status-bar",
-      "expo-sqlite"
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": true
