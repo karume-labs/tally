@@ -39,6 +39,10 @@ export const parseSchedule = (raw: string): Record<string, string> => {
 };
 
 /** Returns the split-day name assigned to today (locale weekday), or null. */
+/** Weekday key ("mon", "tue", …) for a date, using the same keys as the schedule. */
+export const weekdayKeyFor = (date: Date): (typeof WEEKDAY_KEYS)[number] =>
+  WEEKDAY_KEYS[getDay(startOfDay(date))];
+
 export const todaySplitDayName = (
   schedule: Record<string, string> | null,
 ): string | null => {

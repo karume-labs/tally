@@ -3,13 +3,9 @@ import { getDb } from "@/db/client";
 import * as schema from "@/db/schema";
 import { MAX_FREEZES, XP_PER_LEVEL, XP_VALUES } from "@/lib/constants";
 import { createId, dayKeyForTimestamp } from "@/lib/utils";
+import { calculateSessionXP, calculateStreak } from "@/services/streak";
+import { syncStreakWidgetDots } from "@/services/sync-widget-dots";
 import {
-  calculateSessionXP,
-  calculateStreak,
-  last7DayDots,
-} from "@/services/streak";
-import {
-  writeLast7Dots,
   writeStreakWidgetData,
   writeTodayWidgetData,
 } from "@/services/widgetSync";
@@ -125,7 +121,7 @@ export const finishWorkout = async ({
     xp: nextRow.xp,
     updatedAt: Date.now(),
   });
-  writeLast7Dots(last7DayDots([{ dayKey, status: "workout" }], dayKey));
+  await syncStreakWidgetDots(dayKey);
   writeTodayWidgetData({
     dayName: todayInfo.dayName,
     exerciseCount: exerciseNames.length,

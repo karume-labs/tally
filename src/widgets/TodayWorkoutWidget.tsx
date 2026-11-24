@@ -169,7 +169,7 @@ export const TodayWorkoutWidget = ({
           ...(size === "4x2" ? { padding: 8 } : {}),
         } as FlexWidgetStyle
       }
-      clickAction="OPEN_APP"
+      clickAction="OPEN_TODAY"
     >
       <WidgetCard style={{ padding: size === "4x2" ? 14 : 10 }}>
         {inner}

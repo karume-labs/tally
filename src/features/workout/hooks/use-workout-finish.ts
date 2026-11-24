@@ -10,8 +10,8 @@ import {
 } from "@/db/today";
 import { useWorkoutSession } from "@/features/workout/hooks/use-workout-session";
 import { calculateSessionXP, calculateStreak } from "@/services/streak";
+import { syncStreakWidgetDots } from "@/services/sync-widget-dots";
 import {
-  writeLast7Dots,
   writeStreakWidgetData,
   writeTodayWidgetData,
 } from "@/services/widgetSync";
@@ -89,7 +89,7 @@ export const useWorkoutFinish = () => {
           xp: (streak?.xp ?? 0) + xpResult.totalXP,
           updatedAt: Date.now(),
         });
-        writeLast7Dots([]);
+        await syncStreakWidgetDots(dayKey);
       }
     }
 

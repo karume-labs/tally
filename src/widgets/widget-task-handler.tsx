@@ -1,4 +1,5 @@
 import type React from "react";
+import { Linking } from "react-native";
 import type { WidgetTaskHandlerProps } from "react-native-android-widget";
 import { TextWidget } from "react-native-android-widget";
 import {
@@ -11,6 +12,13 @@ import { StreakWidget } from "./StreakWidget";
 import { TodayWorkoutWidget } from "./TodayWorkoutWidget";
 
 type WidgetName = "Streak" | "TodayWorkout";
+
+// Custom actions (not OPEN_APP/OPEN_URI) reach this handler, which deep-links
+// into the app so the tap lands on the screen the widget is about.
+const CLICK_ROUTES: Record<string, string> = {
+  OPEN_STREAK: "tally:///streak",
+  OPEN_TODAY: "tally:///today",
+};
 
 const widgetComponents: Record<WidgetName, React.ComponentType<object>> = {
   Streak: ({ style }: { style?: object }) => (
@@ -40,7 +48,7 @@ export const WidgetTaskHandler = (props: WidgetTaskHandlerProps) => {
 
       if (widgetName === "Streak") {
         const streakData = readStreakWidgetData();
-        const _dots = readLast7Dots();
+        const dots = readLast7Dots();
         const size =
           props.widgetInfo.width > props.widgetInfo.height ? "2x1" : "1x1";
         props.renderWidget(
@@ -48,6 +56,7 @@ export const WidgetTaskHandler = (props: WidgetTaskHandlerProps) => {
             size={size}
             streak={streakData?.current ?? 0}
             longest={streakData?.longest ?? 0}
+            dots={dots}
           />,
         );
       } else if (widgetName === "TodayWorkout") {
@@ -69,9 +78,14 @@ export const WidgetTaskHandler = (props: WidgetTaskHandlerProps) => {
       break;
     }
     case "WIDGET_CLICK": {
-      // The widget's clickAction="OPEN_APP" (configured on the FlexWidget) opens
-      // the app. Additional in-widget actions (e.g. a "Start" button) are not
-      // yet supported; forward a no-op so the handler still returns a view.
+      const route = props.clickAction
+        ? CLICK_ROUTES[props.clickAction]
+        : undefined;
+      if (route) {
+        Linking.openURL(route).catch((err: unknown) => {
+          console.warn("[tally.widget] deep link failed:", err);
+        });
+      }
       break;
     }
   }

@@ -5,50 +5,21 @@ import {
   TextWidget,
   type TextWidgetStyle,
 } from "react-native-android-widget";
+import type { DayDot } from "@/services/streak";
 import { WidgetCard } from "./primitives/WidgetCard";
+import { StreakDotRow } from "./StreakDotRow";
 
 interface StreakWidgetProps {
   streak?: number;
   longest?: number;
+  dots?: DayDot[];
   size?: "1x1" | "2x1";
 }
-
-const DOT_WORKOUT = "#ffd340";
-const DOT_REST = "#4a4d55";
-const DOT_MISSED = "#f87171";
-const DOT_FREEZE = "#fff2c4";
-
-const DayDot = ({
-  status,
-}: {
-  status: "workout" | "rest" | "freeze" | "missed";
-}) => {
-  const color =
-    status === "workout"
-      ? DOT_WORKOUT
-      : status === "freeze"
-        ? DOT_FREEZE
-        : status === "rest"
-          ? DOT_REST
-          : DOT_MISSED;
-  return (
-    <View
-      style={
-        {
-          width: 10,
-          height: 10,
-          borderRadius: 5,
-          backgroundColor: color,
-          marginHorizontal: 2,
-        } as ViewStyle
-      }
-    />
-  );
-};
 
 export const StreakWidget = ({
   streak = 0,
   longest = 0,
+  dots = [],
   size = "1x1",
 }: StreakWidgetProps) =>
   size === "2x1" ? (
@@ -61,7 +32,7 @@ export const StreakWidget = ({
           justifyContent: "flex-start",
         } as FlexWidgetStyle
       }
-      clickAction="OPEN_APP"
+      clickAction="OPEN_STREAK"
     >
       <View
         style={
@@ -103,20 +74,7 @@ export const StreakWidget = ({
           />
         </View>
       </View>
-      <View
-        style={
-          {
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginTop: 8,
-            paddingHorizontal: 4,
-          } as ViewStyle
-        }
-      >
-        {Array.from({ length: 7 }).map(() => (
-          <DayDot key="missed" status="missed" />
-        ))}
-      </View>
+      <StreakDotRow dots={dots} />
       <TextWidget
         text={`Best: ${longest}`}
         style={
@@ -139,7 +97,7 @@ export const StreakWidget = ({
           alignItems: "center",
         } as FlexWidgetStyle
       }
-      clickAction="OPEN_APP"
+      clickAction="OPEN_STREAK"
     >
       <WidgetCard style={{ padding: 8 }}>
         <TextWidget text="🔥" style={{ fontSize: 24 } as TextWidgetStyle} />
