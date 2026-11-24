@@ -6,6 +6,7 @@ import { OptionChip } from "@/components/shared/OptionChip";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+import { BackupSection } from "@/features/settings/components/BackupSection";
 import { schemeFromTheme, TALLY_THEME } from "@/lib/theme";
 import { useSettingsStore } from "@/stores/use-settings-store";
 
@@ -128,6 +129,8 @@ export default function SettingsScreen() {
           <Icon as={ChevronRight} className="text-muted-foreground" size={20} />
         </Pressable>
       </SectionCard>
+
+      <BackupSection />
 
       <Text className="pt-1 text-center text-xs text-muted-foreground">
         Tally 1.0 · offline-first workout tracker
