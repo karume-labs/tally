@@ -24,11 +24,13 @@ Each package defines a schema and validates on boot:
 // apps/web/src/features/shared/env/index.ts
 import { z } from "zod";
 
-export const env = z.object({
-  NEXT_PUBLIC_APP_URL: z.string().url(),
-  NEXT_PUBLIC_API_URL: z.string().url(),
-  NODE_ENV: z.enum(["development", "production", "test"]),
-}).parse(process.env);
+export const env = z
+  .object({
+    NEXT_PUBLIC_APP_URL: z.string().url(),
+    NEXT_PUBLIC_API_URL: z.string().url(),
+    NODE_ENV: z.enum(["development", "production", "test"]),
+  })
+  .parse(process.env);
 ```
 
 - **Elysia backend / db:** TypeBox, with `Value.Check` + `Value.Convert`,

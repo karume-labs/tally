@@ -29,6 +29,7 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
 
 # typescript
@@ -39,3 +40,41 @@ yarn-error.*
 
 expo-env.d.ts
 # @end expo-cli
+
+TODO.md
+/android
+/ios
+uniwind-types.d.ts
+
+# Legacy root-level migrations folder (Expo template default).
+# Must stay anchored: an unanchored "migrations/" also swallows the real,
+# required schema migrations in src/db/migrations/.
+/migrations/
+
+# Generated Native Binaries (50MB+ each, do not track to avoid repo bloat)
+/modules/torrent-daemon/android/libs/daemon.aar
+/modules/torrent-daemon/android/libs/daemon-sources.jar
+/modules/torrent-daemon/ios/Daemon.xcframework/
+
+# Native Module Build Artifacts
+/modules/*/android/build/
+/modules/*/android/.cxx/
+/modules/*/ios/build/
+.gradle/
+
+.vscode/
+data/sms-export.json
+models/
+
+.freebuff/
+*.db
+tools/eval/llama.cpp/
+tools/eval/results/
+
+*penny*.zip
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+tools/eval/scripts/penny.ipynb

@@ -21,7 +21,9 @@ values. Consumers get a fully-typed, non-null `env`.
 const baseURL = env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 // Good - use the validated value directly
-export const orpcLink = new RPCLink({ url: `${env.NEXT_PUBLIC_API_URL}/api/server` });
+export const orpcLink = new RPCLink({
+  url: `${env.NEXT_PUBLIC_API_URL}/api/server`,
+});
 ```
 
 If a var is genuinely optional, mark it in the schema (`Type.Optional`,
@@ -72,10 +74,10 @@ Prefer schema-level defaults over scattered `||` fallbacks:
 
 ```ts
 // Schema (single source) - default lives here
-limit: z.number().int().min(1).max(100).default(20)
+limit: z.number().int().min(1).max(100).default(20);
 
 // Consumer - no fallback needed
-orpcClient.games.list({ limit })   // limit is always a number
+orpcClient.games.list({ limit }); // limit is always a number
 ```
 
 ## Review checklist

@@ -5,12 +5,12 @@ commit lands.
 
 ## Toolchain (across the org)
 
-| Tool                | Role                              | Command                    |
-| :------------------ | :-------------------------------- | :------------------------- |
-| Biome               | Lint + format (+ organize imports) | `bunx biome check --write` |
-| TypeScript (`tsc`)  | Typecheck (strict)                | `bun typecheck`            |
-| Lefthook            | Git hooks (pre-commit)            | auto on commit             |
-| Bun                 | Package manager + runner          | `bun install`, `bun run`   |
+| Tool               | Role                               | Command                    |
+| :----------------- | :--------------------------------- | :------------------------- |
+| Biome              | Lint + format (+ organize imports) | `bunx biome check --write` |
+| TypeScript (`tsc`) | Typecheck (strict)                 | `bun typecheck`            |
+| Lefthook           | Git hooks (pre-commit)             | auto on commit             |
+| Bun                | Package manager + runner           | `bun install`, `bun run`   |
 
 ## Biome configuration
 

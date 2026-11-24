@@ -21,13 +21,13 @@ locations without searching.
 - Hooks/utilities/services/hooks files are kebab-case
   (`use-catalog-filters.ts`, `format-slug.ts`).
 
-| Kind                   | Case      | Example                        |
-| :--------------------- | :-------- | :----------------------------- |
-| Folders                | kebab     | `features/shared/components`   |
-| Files (general)        | kebab     | `useQueryErrorToast.ts` -> `use-query-error-toast.ts` |
-| Component files        | PascalCase| `GamesView.tsx`                |
-| Exported components    | PascalCase| `export const GamesView`       |
-| Hooks / utils / services| kebab   | `use-catalog-filters.ts`       |
+| Kind                     | Case       | Example                                               |
+| :----------------------- | :--------- | :---------------------------------------------------- |
+| Folders                  | kebab      | `features/shared/components`                          |
+| Files (general)          | kebab      | `useQueryErrorToast.ts` -> `use-query-error-toast.ts` |
+| Component files          | PascalCase | `GamesView.tsx`                                       |
+| Exported components      | PascalCase | `export const GamesView`                              |
+| Hooks / utils / services | kebab      | `use-catalog-filters.ts`                              |
 
 ## Symbols
 

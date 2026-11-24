@@ -5,12 +5,12 @@ Pick the validator that matches the stack and derive types from it.
 
 ## Stacks in use
 
-| Stack | Validator | Where | Notes |
-| :----- | :--------- | :----- | :----- |
-| Elysia server | TypeBox + `Value.Check`/`Value.Convert` | `rules/ELYSIA-EDEN.md` | Hard-fail on boot; `Static<typeof>` for inferred types. |
-| oRPC + Next.js | Zod | `rules/ORPC.md` + oRPC procedures | Zodinput/output schemas; inferred client types. |
-| App-side forms / untrusted input | Zod | Feature modules | Derive `z.infer` for local types. |
-| Persisted data | Drizzle schema | `src/db/schema.ts` | The schema is the source of truth for stored shapes. |
+| Stack                            | Validator                               | Where                             | Notes                                                   |
+| :------------------------------- | :-------------------------------------- | :-------------------------------- | :------------------------------------------------------ |
+| Elysia server                    | TypeBox + `Value.Check`/`Value.Convert` | `rules/ELYSIA-EDEN.md`            | Hard-fail on boot; `Static<typeof>` for inferred types. |
+| oRPC + Next.js                   | Zod                                     | `rules/ORPC.md` + oRPC procedures | Zodinput/output schemas; inferred client types.         |
+| App-side forms / untrusted input | Zod                                     | Feature modules                   | Derive `z.infer` for local types.                       |
+| Persisted data                   | Drizzle schema                          | `src/db/schema.ts`                | The schema is the source of truth for stored shapes.    |
 
 ## TypeBox (Elysia)
 
