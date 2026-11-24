@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
 import { DayDotRow } from "@/components/shared/DayDotRow";
 import { SectionCard } from "@/components/shared/SectionCard";
@@ -7,6 +7,7 @@ import { Text } from "@/components/ui/text";
 import { loadRecentHistory } from "@/db/streak-history";
 import { last7DayDots } from "@/services/streak";
 import { useStreakStore } from "@/stores/use-streak-store";
+import { FreezeSafeguards } from "./FreezeSafeguards";
 import { FreezeToken } from "./FreezeToken";
 import { XPBar } from "./XPBar";
 
@@ -16,15 +17,13 @@ export const StreakCounter = () => {
     Array<{ dayKey: string; status: string }>
   >([]);
 
-  useEffect(() => {
-    let cancelled = false;
-    loadRecentHistory().then((rows) => {
-      if (!cancelled) setHistory(rows);
-    });
-    return () => {
-      cancelled = true;
-    };
+  const reloadHistory = useCallback(() => {
+    loadRecentHistory().then(setHistory);
   }, []);
+
+  useEffect(() => {
+    reloadHistory();
+  }, [reloadHistory]);
 
   const dots = useMemo(
     () => last7DayDots(history, row?.lastLogDayKey ?? null),
@@ -74,6 +73,7 @@ export const StreakCounter = () => {
 
       <SectionCard title="Freezes">
         <FreezeToken />
+        <FreezeSafeguards onChanged={reloadHistory} />
         <Text className="mt-2 text-xs text-muted-foreground">
           Earn a freeze at 7, 30 and 100 days. Freezes cover a missed day.
         </Text>
