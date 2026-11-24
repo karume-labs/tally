@@ -5,11 +5,9 @@ interface WidgetTextProps {
   style?: TextWidgetStyle;
 }
 
-export function WidgetText({ text, style }: WidgetTextProps) {
-  return (
-    <TextWidget
-      text={text}
-      style={{ textAlign: "center", ...style } as TextWidgetStyle}
-    />
-  );
-}
+export const WidgetText = ({ text, style }: WidgetTextProps) => (
+  <TextWidget
+    text={text}
+    style={{ textAlign: "center", ...style } as TextWidgetStyle}
+  />
+);

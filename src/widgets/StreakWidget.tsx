@@ -13,16 +13,16 @@ interface StreakWidgetProps {
   size?: "1x1" | "2x1";
 }
 
-const DOT_WORKOUT = "#22c55e";
-const DOT_REST = "#6b7280";
-const DOT_MISSED = "#ef4444";
-const DOT_FREEZE = "#f59e0b";
+const DOT_WORKOUT = "#ffd340";
+const DOT_REST = "#4a4d55";
+const DOT_MISSED = "#f87171";
+const DOT_FREEZE = "#fff2c4";
 
-function DayDot({
+const DayDot = ({
   status,
 }: {
   status: "workout" | "rest" | "freeze" | "missed";
-}) {
+}) => {
   const color =
     status === "workout"
       ? DOT_WORKOUT
@@ -44,95 +44,95 @@ function DayDot({
       }
     />
   );
-}
+};
 
-export function StreakWidget({
+export const StreakWidget = ({
   streak = 0,
   longest = 0,
   size = "1x1",
-}: StreakWidgetProps) {
-  if (size === "2x1") {
-    return (
-      <FlexWidget
+}: StreakWidgetProps) =>
+  size === "2x1" ? (
+    <FlexWidget
+      style={
+        {
+          backgroundColor: "#1a1c20",
+          borderRadius: 16,
+          padding: 12,
+          justifyContent: "flex-start",
+        } as FlexWidgetStyle
+      }
+      clickAction="OPEN_APP"
+    >
+      <View
         style={
           {
-            backgroundColor: "#1a1a2e",
-            borderRadius: 16,
-            padding: 12,
-            justifyContent: "flex-start",
-          } as FlexWidgetStyle
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+          } as ViewStyle
         }
-        clickAction="OPEN_APP"
       >
+        <TextWidget
+          text="🔥"
+          style={{ fontSize: 24, marginRight: 2 } as TextWidgetStyle}
+        />
         <View
           style={
             {
               flexDirection: "row",
-              alignItems: "center",
+              alignItems: "baseline",
               justifyContent: "center",
-              gap: 6,
+              gap: 4,
             } as ViewStyle
           }
         >
           <TextWidget
-            text="🔥"
-            style={{ fontSize: 24, marginRight: 2 } as TextWidgetStyle}
-          />
-          <View
+            text={String(streak)}
             style={
               {
-                flexDirection: "row",
-                alignItems: "baseline",
-                justifyContent: "center",
-                gap: 4,
-              } as ViewStyle
+                fontSize: 28,
+                color: "#ffd340",
+                fontWeight: "bold",
+              } as TextWidgetStyle
             }
-          >
-            <TextWidget
-              text={String(streak)}
-              style={
-                {
-                  fontSize: 28,
-                  color: "#ff6b35",
-                  fontWeight: "bold",
-                } as TextWidgetStyle
-              }
-            />
-            <TextWidget
-              text="day streak"
-              style={{ fontSize: 10, color: "#888" } as TextWidgetStyle}
-            />
-          </View>
+          />
+          <TextWidget
+            text="day streak"
+            style={{ fontSize: 10, color: "#a9abb4" } as TextWidgetStyle}
+          />
         </View>
-        <View
-          style={
-            {
-              flexDirection: "row",
-              justifyContent: "space-between",
-              marginTop: 8,
-              paddingHorizontal: 4,
-            } as ViewStyle
-          }
-        >
-          {Array.from({ length: 7 }).map((_, i) => (
-            <DayDot key={i} status="missed" />
-          ))}
-        </View>
-        <TextWidget
-          text={`Best: ${longest}`}
-          style={
-            { fontSize: 9, color: "#666", marginTop: 6 } as TextWidgetStyle
-          }
-        />
-      </FlexWidget>
-    );
-  }
-
-  return (
+      </View>
+      <View
+        style={
+          {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginTop: 8,
+            paddingHorizontal: 4,
+          } as ViewStyle
+        }
+      >
+        {Array.from({ length: 7 }).map(() => (
+          <DayDot key="missed" status="missed" />
+        ))}
+      </View>
+      <TextWidget
+        text={`Best: ${longest}`}
+        style={
+          {
+            fontSize: 9,
+            color: "#7c7f88",
+            marginTop: 6,
+          } as TextWidgetStyle
+        }
+      />
+    </FlexWidget>
+  ) : (
     <FlexWidget
       style={
         {
-          backgroundColor: "#1a1a2e",
+          backgroundColor: "#1a1c20",
           borderRadius: 16,
           padding: 6,
           justifyContent: "center",
@@ -148,16 +148,15 @@ export function StreakWidget({
           style={
             {
               fontSize: 32,
-              color: "#ff6b35",
+              color: "#ffd340",
               fontWeight: "bold",
             } as TextWidgetStyle
           }
         />
         <TextWidget
           text="day streak"
-          style={{ fontSize: 10, color: "#888" } as TextWidgetStyle}
+          style={{ fontSize: 10, color: "#a9abb4" } as TextWidgetStyle}
         />
       </WidgetCard>
     </FlexWidget>
   );
-}

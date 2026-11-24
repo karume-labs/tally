@@ -101,7 +101,7 @@ let _db: ReturnType<typeof drizzle> | null = null;
  * Creates the DB file, applies the schema migration (IF NOT EXISTS), and
  * seeds the single streak_state row on first access.
  */
-export function getDb() {
+export const getDb = () => {
   if (_db) {
     return _db;
   }
@@ -111,35 +111,29 @@ export function getDb() {
 
   // Apply schema migration. Uses IF NOT EXISTS so re-runs are safe.
   try {
-    // expo-sqlite's database exposes exec() for multi-statement SQL.
-    (expoDb as unknown as { exec: (sql: string) => void }).exec(MIGRATION_SQL);
-  } catch (_err) {
-    // Fallback: run each CREATE individually via execute().
-    try {
-      const expoAny = expoDb as unknown as {
-        execute: (sql: string) => void;
-      };
-      for (const stmt of MIGRATION_SQL.split(";")
-        .map((s) => s.trim())
-        .filter(Boolean)) {
-        expoAny.execute(stmt);
-      }
-    } catch (fallbackErr) {
-      console.warn(
-        "[tally.db] migration failed, both exec and execute:",
-        fallbackErr,
+    expoDb.execSync(MIGRATION_SQL);
+    // SQLite has no ADD COLUMN IF NOT EXISTS, so new columns are added only
+    // when an older database does not already have them.
+    const columns = expoDb.getAllSync<{ name: string }>(
+      `PRAGMA table_info("split_day_exercises")`,
+    );
+    if (!columns.some((column) => column.name === "superset_group")) {
+      expoDb.execSync(
+        `ALTER TABLE "split_day_exercises" ADD COLUMN "superset_group" TEXT`,
       );
     }
+  } catch (err) {
+    console.error("[tally.db] migration failed:", err);
   }
 
   return _db;
-}
+};
 
 /**
  * initializeSchema ensures the single-row streak_state row exists.
  * Call this from the app root layout so the DB is ready on first render.
  */
-export async function initializeSchema() {
+export const initializeSchema = async () => {
   const db = getDb();
 
   try {
@@ -161,4 +155,4 @@ export async function initializeSchema() {
   } catch (err) {
     console.warn("[tally.db] streak_state seed skipped:", err);
   }
-}
+};

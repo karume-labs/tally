@@ -1,8 +1,9 @@
 @import "tailwindcss";
+@import "uniwind";
 @import "tw-animate-css";
 
 @theme {
-  --radius: 10px;
+  --radius: 14px;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -15,62 +16,61 @@
 /**
  * The two palettes behind every colour token in the app.
  *
- * Light is warm paper, dark is an elevated zinc, and nothing anywhere is pure
- * black. Both blocks declare every token explicitly rather than sharing one set.
+ * Derived from the app mark: a near-black glyph on a saturated yellow tile. So
+ * yellow is the only accent, dark surfaces stay a whisker off black, and status
+ * greens are pulled toward the same warm family. Both blocks declare every
+ * token explicitly rather than sharing one set.
  */
 @layer theme {
   :root {
     @variant light {
-      --color-background: #faf7f2;
-      --color-foreground: #1c1917;
+      --color-background: #fff9e4;
+      --color-foreground: #141414;
       --color-card: #ffffff;
-      --color-card-foreground: #1c1917;
+      --color-card-foreground: #141414;
       --color-popover: #ffffff;
-      --color-popover-foreground: #1c1917;
-      --color-primary: #a3541c;
-      --color-primary-foreground: #fff8f0;
-      --color-secondary: #f1eae0;
-      --color-secondary-foreground: #1c1917;
-      --color-muted: #f1eae0;
-      --color-muted-foreground: #6b5f51;
-      --color-accent: #f6e2ce;
-      --color-accent-foreground: #1c1917;
+      --color-popover-foreground: #141414;
+      --color-primary: #ffd340;
+      --color-primary-foreground: #141414;
+      --color-secondary: #f6ebc5;
+      --color-secondary-foreground: #141414;
+      --color-muted: #f6ebc5;
+      --color-muted-foreground: #6a6249;
+      --color-accent: #ffefb3;
+      --color-accent-foreground: #141414;
       --color-destructive: #b42318;
       --color-destructive-foreground: #fff5f5;
-      --color-border: #e2d8ca;
-      --color-input: #e2d8ca;
-      --color-ring: #a3541c;
-      --color-success: #4f7a2e;
+      --color-border: #e5d9ae;
+      --color-input: #e5d9ae;
+      --color-ring: #c79a00;
+      --color-success: #556f1f;
     }
 
     @variant dark {
       /*
-       * Elevated, not black. #000 against a zinc border disappears on OLED and
-       * makes every card edge read as a seam; #18181b keeps the border/shadow
-       * separation that the light palette gets for free from paper-on-white.
+       * The logo's ink, lifted a touch off pure black so card edges and borders
+       * still read as separate surfaces on OLED.
        */
-      --color-background: #18181b;
-      --color-foreground: #f4f4f5;
-      --color-card: #27272a;
-      --color-card-foreground: #f4f4f5;
-      --color-popover: #27272a;
-      --color-popover-foreground: #f4f4f5;
-      /* Brighter than the light-mode rust: the same hue on a dark ground needs
-         more luminance to clear 4.5:1 against it. */
-      --color-primary: #e08a4b;
-      --color-primary-foreground: #1a1206;
-      --color-secondary: #2e2e33;
-      --color-secondary-foreground: #f4f4f5;
-      --color-muted: #27272a;
-      --color-muted-foreground: #a1a1aa;
-      --color-accent: #3f2a18;
-      --color-accent-foreground: #f4f4f5;
+      --color-background: #101113;
+      --color-foreground: #f7f5ed;
+      --color-card: #1a1c20;
+      --color-card-foreground: #f7f5ed;
+      --color-popover: #212328;
+      --color-popover-foreground: #f7f5ed;
+      --color-primary: #ffd340;
+      --color-primary-foreground: #141414;
+      --color-secondary: #26282e;
+      --color-secondary-foreground: #f7f5ed;
+      --color-muted: #212328;
+      --color-muted-foreground: #a9abb4;
+      --color-accent: #3a3213;
+      --color-accent-foreground: #fff2c4;
       --color-destructive: #f87171;
       --color-destructive-foreground: #1a0f0f;
-      --color-border: #3f3f46;
-      --color-input: #3f3f46;
-      --color-ring: #e08a4b;
-      --color-success: #86b85c;
+      --color-border: #3a3d45;
+      --color-input: #3a3d45;
+      --color-ring: #ffd340;
+      --color-success: #c9db74;
     }
   }
 }

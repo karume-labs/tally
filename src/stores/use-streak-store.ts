@@ -25,7 +25,6 @@ interface StreakStore {
     createdAt: Date;
   }[];
   milestones: StreakMilestone[];
-
   setRow: (row: StreakRow) => void;
   addXP: (
     amount: number,

@@ -1,14 +1,14 @@
 import type React from "react";
 import type { WidgetTaskHandlerProps } from "react-native-android-widget";
-import { StreakWidget } from "./StreakWidget";
-import { TodayWorkoutWidget } from "./TodayWorkoutWidget";
-import { WidgetCard } from "./primitives/WidgetCard";
 import { TextWidget } from "react-native-android-widget";
 import {
+  readLast7Dots,
   readStreakWidgetData,
   readTodayWidgetData,
-  readLast7Dots,
 } from "../services/widgetSync";
+import { WidgetCard } from "./primitives/WidgetCard";
+import { StreakWidget } from "./StreakWidget";
+import { TodayWorkoutWidget } from "./TodayWorkoutWidget";
 
 type WidgetName = "Streak" | "TodayWorkout";
 
@@ -25,7 +25,7 @@ const widgetComponents: Record<WidgetName, React.ComponentType<object>> = {
   ),
 };
 
-export function WidgetTaskHandler(props: WidgetTaskHandlerProps) {
+export const WidgetTaskHandler = (props: WidgetTaskHandlerProps) => {
   const widgetName = props.widgetInfo.widgetName as WidgetName | undefined;
   const Widget = widgetName ? widgetComponents[widgetName] : undefined;
 
@@ -35,13 +35,14 @@ export function WidgetTaskHandler(props: WidgetTaskHandlerProps) {
     case "WIDGET_RESIZED": {
       if (!Widget) {
         // Unknown widget name — render nothing.
-        return null;
+        break;
       }
 
       if (widgetName === "Streak") {
         const streakData = readStreakWidgetData();
         const _dots = readLast7Dots();
-        const size = props.widgetInfo.width > props.widgetInfo.height ? "2x1" : "1x1";
+        const size =
+          props.widgetInfo.width > props.widgetInfo.height ? "2x1" : "1x1";
         props.renderWidget(
           <StreakWidget
             size={size}
@@ -65,6 +66,7 @@ export function WidgetTaskHandler(props: WidgetTaskHandlerProps) {
           />,
         );
       }
+      break;
     }
     case "WIDGET_CLICK": {
       // The widget's clickAction="OPEN_APP" (configured on the FlexWidget) opens
@@ -79,4 +81,4 @@ export function WidgetTaskHandler(props: WidgetTaskHandlerProps) {
       <TextWidget text="Tally" style={{ fontSize: 12, color: "#888" }} />
     </WidgetCard>
   );
-}
+};

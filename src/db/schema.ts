@@ -47,6 +47,8 @@ export const splitDayExercises = sqliteTable("split_day_exercises", {
   targetReps: text("target_reps"),
   restSeconds: integer("rest_seconds").default(90),
   notes: text("notes"),
+  // Exercises with the same label are performed back-to-back as a superset.
+  supersetGroup: text("superset_group"),
 });
 
 // ─── Sessions ───────────────────────────────────────────────────────────────────

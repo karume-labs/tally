@@ -16,48 +16,64 @@ interface TodayWorkoutWidgetProps {
   size?: "2x2" | "4x2";
 }
 
-export function TodayWorkoutWidget({
+export const TodayWorkoutWidget = ({
   dayName = null,
   exerciseCount = 0,
   exerciseNames = [],
   isRestDay = false,
   sessionActive = false,
   size = "2x2",
-}: TodayWorkoutWidgetProps) {
-  const content = isRestDay ? (
+}: TodayWorkoutWidgetProps) => {
+  const inner = isRestDay ? (
     <View
       style={
-        { alignItems: "center", justifyContent: "center", gap: 4 } as ViewStyle
+        {
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 4,
+        } as ViewStyle
       }
     >
       <TextWidget text="😴" style={{ fontSize: 32 } as TextWidgetStyle} />
       <TextWidget
         text="Rest Day"
         style={
-          { fontSize: 16, color: "#fff", fontWeight: "bold" } as TextWidgetStyle
+          {
+            fontSize: 16,
+            color: "#f7f5ed",
+            fontWeight: "bold",
+          } as TextWidgetStyle
         }
       />
       <TextWidget
         text="Recover and grow"
-        style={{ fontSize: 12, color: "#888" } as TextWidgetStyle}
+        style={{ fontSize: 12, color: "#a9abb4" } as TextWidgetStyle}
       />
     </View>
   ) : dayName == null ? (
     <View
       style={
-        { alignItems: "center", justifyContent: "center", gap: 4 } as ViewStyle
+        {
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 4,
+        } as ViewStyle
       }
     >
       <TextWidget text="🏋️" style={{ fontSize: 28 } as TextWidgetStyle} />
       <TextWidget
         text="Set up a split"
         style={
-          { fontSize: 14, color: "#fff", fontWeight: "bold" } as TextWidgetStyle
+          {
+            fontSize: 14,
+            color: "#f7f5ed",
+            fontWeight: "bold",
+          } as TextWidgetStyle
         }
       />
       <TextWidget
         text="Tap to get started"
-        style={{ fontSize: 11, color: "#888" } as TextWidgetStyle}
+        style={{ fontSize: 11, color: "#a9abb4" } as TextWidgetStyle}
       />
     </View>
   ) : (
@@ -74,12 +90,23 @@ export function TodayWorkoutWidget({
       <TextWidget
         text={dayName}
         style={
-          { fontSize: 16, color: "#fff", fontWeight: "bold" } as TextWidgetStyle
+          {
+            fontSize: 16,
+            color: "#f7f5ed",
+            fontWeight: "bold",
+          } as TextWidgetStyle
         }
       />
       <TextWidget
-        text={`${exerciseCount} exercises`}
-        style={{ fontSize: 12, color: "#888" } as TextWidgetStyle}
+        text={
+          sessionActive ? "Session in progress" : `${exerciseCount} exercises`
+        }
+        style={
+          {
+            fontSize: 12,
+            color: sessionActive ? "#c9db74" : "#a9abb4",
+          } as TextWidgetStyle
+        }
       />
       <View
         style={
@@ -92,11 +119,11 @@ export function TodayWorkoutWidget({
           } as ViewStyle
         }
       >
-        {exerciseNames.slice(0, size === "4x2" ? 3 : 2).map((name, i) => (
+        {exerciseNames.slice(0, size === "4x2" ? 3 : 2).map((name) => (
           <TextWidget
-            key={i}
+            key={name}
             text={`• ${name}`}
-            style={{ fontSize: 11, color: "#aaa" } as TextWidgetStyle}
+            style={{ fontSize: 11, color: "#a9abb4" } as TextWidgetStyle}
           />
         ))}
       </View>
@@ -107,7 +134,7 @@ export function TodayWorkoutWidget({
               marginTop: 6,
               paddingHorizontal: 12,
               paddingVertical: 4,
-              backgroundColor: "#ff6b35",
+              backgroundColor: "#ffd340",
               borderRadius: 8,
               alignItems: "center",
               justifyContent: "center",
@@ -120,7 +147,7 @@ export function TodayWorkoutWidget({
             style={
               {
                 fontSize: 13,
-                color: "#fff",
+                color: "#141414",
                 fontWeight: "bold",
               } as TextWidgetStyle
             }
@@ -134,7 +161,7 @@ export function TodayWorkoutWidget({
     <FlexWidget
       style={
         {
-          backgroundColor: "#1a1a2e",
+          backgroundColor: "#1a1c20",
           borderRadius: 16,
           padding: 6,
           justifyContent: "center",
@@ -145,8 +172,8 @@ export function TodayWorkoutWidget({
       clickAction="OPEN_APP"
     >
       <WidgetCard style={{ padding: size === "4x2" ? 14 : 10 }}>
-        {content}
+        {inner}
       </WidgetCard>
     </FlexWidget>
   );
-}
+};
