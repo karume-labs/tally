@@ -17,6 +17,10 @@ import { WorkoutFooter } from "@/features/workout/components/WorkoutFooter";
 import { useWorkoutSession } from "@/features/workout/hooks/use-workout-session";
 import { finishWorkout } from "@/features/workout/services/finish-workout";
 import { isValidEquipment, isValidMuscleGroup } from "@/lib/utils";
+import {
+  cancelRestNotification,
+  scheduleRestNotification,
+} from "@/services/notifications";
 import { useSettingsStore } from "@/stores/use-settings-store";
 import { useWorkoutStore } from "@/stores/use-workout-store";
 
@@ -102,6 +106,18 @@ export default function WorkoutScreen() {
       ? store.exercises.find((ex) => ex.exerciseId === activeExerciseId)
       : null;
   const nextSetNumber = activeExercise ? activeExercise.sets.length + 1 : 1;
+  const restExerciseName = activeExercise?.name ?? "your next set";
+
+  // Keep the scheduled alert in step with the in-app rest timer, including
+  // when the app is backgrounded or killed during a rest.
+  useEffect(() => {
+    const endsAt = store.restTimerEndsAt;
+    if (endsAt == null) return;
+    scheduleRestNotification(endsAt, restExerciseName);
+    return () => {
+      cancelRestNotification();
+    };
+  }, [store.restTimerEndsAt, restExerciseName]);
 
   const logSet = () => {
     if (activeExercise == null) return;
