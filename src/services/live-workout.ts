@@ -102,6 +102,8 @@ const post = async (current: LiveWorkoutState) => {
         AndroidForegroundServiceType.FOREGROUND_SERVICE_TYPE_HEALTH,
       ],
       ongoing: true,
+      // The Android 16 Live Update opt-in is not exposed by the library; the
+      // config plugin patches it in for foreground-service notifications only.
       onlyAlertOnce: true,
       smallIcon: SMALL_ICON,
       color: ACCENT,

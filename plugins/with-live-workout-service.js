@@ -19,6 +19,10 @@ const PERMISSIONS = [
   // permission. This one is granted at install, so it costs no prompt.
   "android.permission.HIGH_SAMPLING_RATE_SENSORS",
   "android.permission.POST_NOTIFICATIONS",
+  // Non-runtime opt-in for Android 16 Live Updates. Without it the system
+  // refuses to promote an ongoing notification, whatever the notification asks
+  // for; on older releases it is an unused string in the manifest.
+  "android.permission.POST_PROMOTED_NOTIFICATIONS",
 ];
 
 const SMALL_ICON_NAME = "ic_stat_tally";
@@ -89,5 +93,75 @@ const withSmallIcon = (config) =>
     },
   ]);
 
+// Android 16 promotes an ongoing notification to a Live Update only when it
+// opts in with the `android.requestPromotedOngoing` extra. The library builds
+// every notification itself and exposes no option for this, and a posted
+// notification cannot be edited afterwards, so the one hook available is its
+// builder source. Prebuild appends the opt-in there, guarded by API level and
+// by `asForegroundService`, so ordinary notifications are untouched and older
+// devices behave exactly as before.
+const NOTIFICATION_MANAGER_JAVA = path.join(
+  "node_modules",
+  "react-native-notify-kit",
+  "android",
+  "src",
+  "main",
+  "java",
+  "app",
+  "notifee",
+  "core",
+  "NotificationManager.java",
+);
+
+const PROMOTION_MARKER = "TALLY_PROMOTED_ONGOING";
+const PROMOTION_ANCHOR = "builder.setExtras(notificationModel.getData());";
+const PROMOTION_PATCH = `${PROMOTION_ANCHOR}
+
+            // ${PROMOTION_MARKER}: ask Android 16 to promote this ongoing
+            // notification to a Live Update. Ignored below API 36 and when the
+            // user has Live Updates switched off, so this is a no-op there.
+            if (Build.VERSION.SDK_INT >= 36
+                && Boolean.TRUE.equals(androidModel.getAsForegroundService())) {
+              Bundle promotedOngoing = new Bundle();
+              promotedOngoing.putBoolean("android.requestPromotedOngoing", true);
+              builder.addExtras(promotedOngoing);
+            }`;
+
+const withPromotedOngoing = (config) =>
+  withDangerousMod(config, [
+    "android",
+    async (config) => {
+      const file = path.join(
+        config.modRequest.projectRoot,
+        NOTIFICATION_MANAGER_JAVA,
+      );
+      if (!fs.existsSync(file)) {
+        console.warn(
+          "[tally] react-native-notify-kit is missing; skipped the Live Update patch.",
+        );
+        return config;
+      }
+
+      const source = await fs.promises.readFile(file, "utf8");
+      // Idempotent: prebuild runs on every build, and dependencies may be
+      // reinstalled underneath it.
+      if (source.includes(PROMOTION_MARKER)) return config;
+      if (!source.includes(PROMOTION_ANCHOR)) {
+        console.warn(
+          "[tally] NotificationManager.java changed shape; Live Update promotion was not patched in.",
+        );
+        return config;
+      }
+
+      await fs.promises.writeFile(
+        file,
+        source.replace(PROMOTION_ANCHOR, PROMOTION_PATCH),
+      );
+      return config;
+    },
+  ]);
+
 module.exports = (config) =>
-  withSmallIcon(withForegroundService(withPermissions(config)));
+  withPromotedOngoing(
+    withSmallIcon(withForegroundService(withPermissions(config))),
+  );
