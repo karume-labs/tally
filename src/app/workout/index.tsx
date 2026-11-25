@@ -106,6 +106,9 @@ export default function WorkoutScreen() {
         return;
       }
       const exercises = await loadExercisesForSplitDay(day.id);
+      // The abandon guard below may have cancelled the session while this list
+      // was loading; adding to a reset store would leave orphan exercises.
+      if (cancelled) return;
       for (const ex of exercises) {
         const muscleGroup = isValidMuscleGroup(ex.muscleGroup)
           ? ex.muscleGroup
@@ -138,6 +141,20 @@ export default function WorkoutScreen() {
       cancelled = true;
     };
   }, [session, dayId, announceLiveWorkout]);
+
+  // A widget tap starts a session immediately, so an accidental tap followed by
+  // leaving this screen would leave an empty session behind — the widget would
+  // keep saying "Session in progress" and the row would sit unfinished in the db.
+  // Anything with a logged set is the user's session and is kept.
+  useEffect(() => {
+    return () => {
+      const live = useWorkoutStore.getState();
+      if (live.sessionId == null || live.completedSets > 0) return;
+      session.cancelSession();
+      endLiveWorkout();
+      syncTodayWidget(false).then(refreshWidgets);
+    };
+  }, [session]);
 
   const startedAt = store.startedAt;
   useEffect(() => {
