@@ -4,9 +4,15 @@ import { FlexWidget, type FlexWidgetStyle } from "react-native-android-widget";
 interface WidgetCardProps {
   style?: FlexWidgetStyle;
   children: ReactNode;
+  /** Tap target for the whole card; omit on cards that are purely layout. */
+  clickAction?: string;
 }
 
-export const WidgetCard = ({ style, children }: WidgetCardProps) => (
+export const WidgetCard = ({
+  style,
+  children,
+  clickAction = "NONE",
+}: WidgetCardProps) => (
   <FlexWidget
     style={
       {
@@ -18,7 +24,7 @@ export const WidgetCard = ({ style, children }: WidgetCardProps) => (
         ...style,
       } as FlexWidgetStyle
     }
-    clickAction="NONE"
+    clickAction={clickAction}
   >
     {children}
   </FlexWidget>

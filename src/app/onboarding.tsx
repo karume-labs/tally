@@ -7,6 +7,7 @@ import { ActionButton } from "@/components/shared/ActionButton";
 import { Text } from "@/components/ui/text";
 import { OnboardingSlideView } from "@/features/onboarding/components/OnboardingSlideView";
 import { PaginatorDot } from "@/features/onboarding/components/PaginatorDot";
+import { PermissionsStep } from "@/features/onboarding/components/PermissionsStep";
 import {
   ONBOARDING_SLIDES,
   type OnboardingSlide,
@@ -21,6 +22,7 @@ export default function OnboardingScreen() {
   const setSettings = useSettingsStore((s) => s.setSettings);
   const listRef = useRef<FlatList<OnboardingSlide>>(null);
   const [index, setIndex] = useState(0);
+  const [step, setStep] = useState<"slides" | "permissions">("slides");
   const isLast = index === ONBOARDING_SLIDES.length - 1;
 
   // Persisted before navigating: if the app dies on the way into the tabs, the
@@ -32,7 +34,7 @@ export default function OnboardingScreen() {
 
   const next = () => {
     if (isLast) {
-      dismiss();
+      setStep("permissions");
       return;
     }
     const target = index + 1;
@@ -42,6 +44,17 @@ export default function OnboardingScreen() {
     });
     setIndex(target);
   };
+
+  if (step === "permissions") {
+    return (
+      <View
+        className="flex-1 bg-background"
+        style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+      >
+        <PermissionsStep onDone={dismiss} />
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-background">
@@ -94,7 +107,7 @@ export default function OnboardingScreen() {
         </View>
         <ActionButton
           size="lg"
-          label={isLast ? "Start training" : "Next"}
+          label={isLast ? "Continue" : "Next"}
           icon={isLast ? Play : undefined}
           onPress={next}
         />

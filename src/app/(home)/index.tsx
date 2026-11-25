@@ -15,6 +15,7 @@ import {
   getTodayInfo,
   type TodayExercise,
 } from "@/db/today";
+import { StartRoutineButton } from "@/features/workout/components/StartRoutineButton";
 import { last7DayDots } from "@/services/streak";
 import { useStreakStore } from "@/stores/use-streak-store";
 
@@ -150,9 +151,12 @@ export default function HomeScreen() {
             />
           </View>
         ) : isRestDay ? (
-          <Text className="text-sm text-muted-foreground">
-            {info?.dayName}. Recover, eat, sleep. Tomorrow is yours.
-          </Text>
+          <View className="gap-3">
+            <Text className="text-sm text-muted-foreground">
+              {info?.dayName}. Recover, eat, sleep. Tomorrow is yours.
+            </Text>
+            <StartRoutineButton label="Train a skipped day" />
+          </View>
         ) : (
           <View className="gap-3">
             <View className="flex-row items-center justify-between">
@@ -187,14 +191,16 @@ export default function HomeScreen() {
         )}
 
         {hasSplit && !isRestDay && (
-          <ActionButton
-            size="lg"
-            className="mt-4"
-            icon={canStart ? Play : CalendarDays}
-            label={canStart ? "Start workout" : "View today"}
-            disabled={!canStart}
-            onPress={() => router.push(canStart ? "/workout" : "/today")}
-          />
+          <View className="mt-4 gap-2">
+            <ActionButton
+              size="lg"
+              icon={canStart ? Play : CalendarDays}
+              label={canStart ? "Start workout" : "View today"}
+              disabled={!canStart}
+              onPress={() => router.push(canStart ? "/workout" : "/today")}
+            />
+            <StartRoutineButton />
+          </View>
         )}
       </SectionCard>
 

@@ -7,12 +7,15 @@ import { ActionButton } from "@/components/shared/ActionButton";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+import { type AdjacentDays, getAdjacentDays } from "@/db/split-days";
 import {
   getTodayExercises,
   getTodayInfo,
   type TodayExercise,
 } from "@/db/today";
+import { AdjacentDaysCard } from "@/features/workout/components/AdjacentDaysCard";
 import { ExerciseGroupList } from "@/features/workout/components/ExerciseGroupList";
+import { StartRoutineButton } from "@/features/workout/components/StartRoutineButton";
 import { schemeFromTheme, TALLY_THEME } from "@/lib/theme";
 
 type TodayInfo = Awaited<ReturnType<typeof getTodayInfo>>;
@@ -23,19 +26,26 @@ export default function TodayScreen() {
   const accent = TALLY_THEME[scheme].primary;
   const [info, setInfo] = useState<TodayInfo>(null);
   const [exercises, setExercises] = useState<TodayExercise[]>([]);
+  const [adjacent, setAdjacent] = useState<AdjacentDays>({
+    yesterdayName: null,
+    yesterdayTrained: false,
+    tomorrowName: null,
+  });
   const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
       (async () => {
-        const [todayInfo, todayExercises] = await Promise.all([
+        const [todayInfo, todayExercises, around] = await Promise.all([
           getTodayInfo(),
           getTodayExercises(),
+          getAdjacentDays(),
         ]);
         if (cancelled) return;
         setInfo(todayInfo);
         setExercises(todayExercises ?? []);
+        setAdjacent(around);
         setLoading(false);
       })();
       return () => {
@@ -77,18 +87,25 @@ export default function TodayScreen() {
           />
         </SectionCard>
       ) : isRestDay ? (
-        <SectionCard
-          title={info?.dayName ?? "Rest day"}
-          action={
-            <Text className="rounded-md bg-primary/15 px-2 py-1 text-xs font-semibold text-primary">
-              Rest day
+        <>
+          <SectionCard
+            title={info?.dayName ?? "Rest day"}
+            action={
+              <Text className="rounded-md bg-primary/15 px-2 py-1 text-xs font-semibold text-primary">
+                Rest day
+              </Text>
+            }
+          >
+            <Text className="text-sm text-muted-foreground">
+              No lifting scheduled. Recovery is part of the program — or make up
+              a day you skipped.
             </Text>
-          }
-        >
-          <Text className="text-sm text-muted-foreground">
-            No lifting scheduled. Recovery is part of the program.
-          </Text>
-        </SectionCard>
+            <View className="mt-4">
+              <StartRoutineButton label="Train a skipped day" />
+            </View>
+          </SectionCard>
+          <AdjacentDaysCard adjacent={adjacent} />
+        </>
       ) : (
         <>
           <SectionCard>
@@ -132,6 +149,8 @@ export default function TodayScreen() {
             disabled={exercises.length === 0}
             onPress={() => router.push("/workout")}
           />
+          <StartRoutineButton />
+          <AdjacentDaysCard adjacent={adjacent} />
         </>
       )}
     </ScrollView>

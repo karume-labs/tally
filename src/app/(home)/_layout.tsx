@@ -58,21 +58,17 @@ export default function HomeTabsLayout() {
         headerStyle: { backgroundColor: navTheme.colors.background },
         headerTintColor: navTheme.colors.text,
         headerTitleStyle: { fontWeight: "800", fontSize: 20 },
+        // The screen headers already name each tab, so the bar is icons only.
+        tabBarShowLabel: false,
         tabBarStyle: {
           backgroundColor: navTheme.colors.background,
           borderTopColor: navTheme.colors.border,
-          height: 62 + insets.bottom,
+          height: 56 + insets.bottom,
           paddingTop: 8,
-          paddingBottom: insets.bottom + 6,
+          paddingBottom: insets.bottom + 10,
         },
         tabBarActiveTintColor: navTheme.colors.primary,
         tabBarInactiveTintColor: colors.mutedForeground,
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: "800",
-          letterSpacing: 0.6,
-          textTransform: "uppercase",
-        },
       }}
     >
       <Tabs.Screen
@@ -80,7 +76,6 @@ export default function HomeTabsLayout() {
         options={{
           title: "Tally",
           headerShown: false,
-          tabBarLabel: "Home",
           tabBarIcon: ({ focused }) => (
             <TabIcon colors={colors} icon={House} focused={focused} />
           ),

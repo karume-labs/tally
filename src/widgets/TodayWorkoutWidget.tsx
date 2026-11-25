@@ -5,108 +5,75 @@ import {
   TextWidget,
   type TextWidgetStyle,
 } from "react-native-android-widget";
+import type { DayDot } from "@/services/streak";
 import { WidgetCard } from "./primitives/WidgetCard";
+import { StreakDotRow } from "./StreakDotRow";
 
-interface TodayWorkoutWidgetProps {
-  dayName?: string | null;
-  exerciseCount?: number;
-  exerciseNames?: string[];
-  isRestDay?: boolean;
-  sessionActive?: boolean;
-  size?: "2x2" | "4x2";
+export const TODAY_PANELS = 3;
+
+const TEXT = "#f7f5ed";
+const MUTED = "#a9abb4";
+const ACCENT = "#ffd340";
+
+interface PanelProps {
+  dayName: string | null;
+  tomorrowName: string | null;
+  exerciseCount: number;
+  exerciseNames: string[];
+  isRestDay: boolean;
+  sessionActive: boolean;
+  streak: number;
+  dots: DayDot[];
+  expanded: boolean;
 }
 
-export const TodayWorkoutWidget = ({
-  dayName = null,
-  exerciseCount = 0,
-  exerciseNames = [],
-  isRestDay = false,
-  sessionActive = false,
-  size = "2x2",
-}: TodayWorkoutWidgetProps) => {
-  const inner = isRestDay ? (
-    <View
-      style={
-        {
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 4,
-        } as ViewStyle
-      }
-    >
-      <TextWidget text="😴" style={{ fontSize: 32 } as TextWidgetStyle} />
-      <TextWidget
-        text="Rest Day"
-        style={
-          {
-            fontSize: 16,
-            color: "#f7f5ed",
-            fontWeight: "bold",
-          } as TextWidgetStyle
-        }
-      />
-      <TextWidget
-        text="Recover and grow"
-        style={{ fontSize: 12, color: "#a9abb4" } as TextWidgetStyle}
-      />
-    </View>
-  ) : dayName == null ? (
-    <View
-      style={
-        {
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 4,
-        } as ViewStyle
-      }
-    >
-      <TextWidget text="🏋️" style={{ fontSize: 28 } as TextWidgetStyle} />
-      <TextWidget
-        text="Set up a split"
-        style={
-          {
-            fontSize: 14,
-            color: "#f7f5ed",
-            fontWeight: "bold",
-          } as TextWidgetStyle
-        }
-      />
-      <TextWidget
-        text="Tap to get started"
-        style={{ fontSize: 11, color: "#a9abb4" } as TextWidgetStyle}
-      />
-    </View>
-  ) : (
-    <View
-      style={
-        {
-          alignItems: "center",
-          justifyContent: "flex-start",
-          gap: 2,
-          paddingVertical: 4,
-        } as ViewStyle
-      }
-    >
+const TodayPanel = ({
+  dayName,
+  exerciseCount,
+  exerciseNames,
+  isRestDay,
+  sessionActive,
+  expanded,
+}: PanelProps) => {
+  if (isRestDay) {
+    return (
+      <View style={{ alignItems: "center", gap: 2 } as ViewStyle}>
+        <TextWidget
+          text="Rest day"
+          style={{ fontSize: 18, color: TEXT, fontWeight: "bold" }}
+        />
+        <TextWidget
+          text="Recover and grow"
+          style={{ fontSize: 12, color: MUTED }}
+        />
+      </View>
+    );
+  }
+  if (dayName == null) {
+    return (
+      <View style={{ alignItems: "center", gap: 2 } as ViewStyle}>
+        <TextWidget
+          text="No split yet"
+          style={{ fontSize: 16, color: TEXT, fontWeight: "bold" }}
+        />
+        <TextWidget
+          text="Tap to pick one"
+          style={{ fontSize: 11, color: MUTED }}
+        />
+      </View>
+    );
+  }
+  return (
+    <View style={{ alignItems: "center", gap: 2 } as ViewStyle}>
       <TextWidget
         text={dayName}
-        style={
-          {
-            fontSize: 16,
-            color: "#f7f5ed",
-            fontWeight: "bold",
-          } as TextWidgetStyle
-        }
+        style={{ fontSize: 17, color: TEXT, fontWeight: "bold" }}
       />
       <TextWidget
         text={
           sessionActive ? "Session in progress" : `${exerciseCount} exercises`
         }
-        style={
-          {
-            fontSize: 12,
-            color: sessionActive ? "#c9db74" : "#a9abb4",
-          } as TextWidgetStyle
-        }
+        style={{ fontSize: 12, color: sessionActive ? "#c9db74" : MUTED }}
       />
       <View
         style={
@@ -115,65 +82,107 @@ export const TodayWorkoutWidget = ({
             flexWrap: "wrap",
             justifyContent: "center",
             gap: 2,
-            marginTop: 2,
           } as ViewStyle
         }
       >
-        {exerciseNames.slice(0, size === "4x2" ? 3 : 2).map((name) => (
+        {exerciseNames.slice(0, expanded ? 3 : 2).map((name) => (
           <TextWidget
             key={name}
             text={`• ${name}`}
-            style={{ fontSize: 11, color: "#a9abb4" } as TextWidgetStyle}
+            style={{ fontSize: 11, color: MUTED } as TextWidgetStyle}
           />
         ))}
       </View>
-      {size === "4x2" && (
-        <View
-          style={
-            {
-              marginTop: 6,
-              paddingHorizontal: 12,
-              paddingVertical: 4,
-              backgroundColor: "#ffd340",
-              borderRadius: 8,
-              alignItems: "center",
-              justifyContent: "center",
-              width: 80,
-            } as ViewStyle
-          }
-        >
-          <TextWidget
-            text="▶ Start"
-            style={
-              {
-                fontSize: 13,
-                color: "#141414",
-                fontWeight: "bold",
-              } as TextWidgetStyle
-            }
-          />
-        </View>
-      )}
     </View>
   );
+};
+
+const TomorrowPanel = ({ tomorrowName }: PanelProps) => (
+  <View style={{ alignItems: "center", gap: 3 } as ViewStyle}>
+    <TextWidget
+      text="TOMORROW"
+      style={{
+        fontSize: 9,
+        color: MUTED,
+        fontWeight: "bold",
+        letterSpacing: 1.4,
+      }}
+    />
+    <TextWidget
+      text={tomorrowName ?? "Nothing scheduled"}
+      style={{ fontSize: 16, color: TEXT, fontWeight: "bold" }}
+    />
+    <TextWidget
+      text={tomorrowName == null ? "Pick a split" : "Be ready for it"}
+      style={{ fontSize: 11, color: MUTED }}
+    />
+  </View>
+);
+
+const StreakPanel = ({ streak, dots }: PanelProps) => (
+  <View style={{ alignItems: "center", gap: 2 } as ViewStyle}>
+    <TextWidget
+      text={`${streak} day streak`}
+      style={{ fontSize: 17, color: ACCENT, fontWeight: "bold" }}
+    />
+    <StreakDotRow dots={dots} />
+  </View>
+);
+
+interface TodayWorkoutWidgetProps extends Omit<PanelProps, "expanded"> {
+  panel?: number;
+  size?: "2x2" | "4x2";
+}
+
+export const TodayWorkoutWidget = ({
+  panel = 0,
+  size = "2x2",
+  ...data
+}: TodayWorkoutWidgetProps) => {
+  const index = ((panel % TODAY_PANELS) + TODAY_PANELS) % TODAY_PANELS;
+  const expanded = size === "4x2";
+  const props: PanelProps = { ...data, expanded };
 
   return (
-    <FlexWidget
-      style={
-        {
-          backgroundColor: "#1a1c20",
-          borderRadius: 16,
-          padding: 6,
-          justifyContent: "center",
-          alignItems: "center",
-          ...(size === "4x2" ? { padding: 8 } : {}),
-        } as FlexWidgetStyle
-      }
-      clickAction="OPEN_TODAY"
-    >
-      <WidgetCard style={{ padding: size === "4x2" ? 14 : 10 }}>
-        {inner}
-      </WidgetCard>
-    </FlexWidget>
+    <WidgetCard style={{ padding: expanded ? 12 : 8 }} clickAction="OPEN_TODAY">
+      <FlexWidget
+        style={
+          {
+            alignItems: "center",
+            justifyContent: "center",
+          } as FlexWidgetStyle
+        }
+      >
+        {index === 0 ? <TodayPanel {...props} /> : null}
+        {index === 1 ? <TomorrowPanel {...props} /> : null}
+        {index === 2 ? <StreakPanel {...props} /> : null}
+      </FlexWidget>
+      <FlexWidget
+        style={
+          {
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            flexGap: 10,
+            marginTop: 6,
+          } as FlexWidgetStyle
+        }
+      >
+        <TextWidget
+          text="‹"
+          clickAction="TODAY_PREV"
+          style={{ fontSize: 20, color: MUTED, padding: 2 }}
+        />
+        <TextWidget
+          text={index === 0 ? "today" : index === 1 ? "tomorrow" : "streak"}
+          style={{ fontSize: 9, color: MUTED, letterSpacing: 0.8 }}
+        />
+        <TextWidget
+          text="›"
+          clickAction="TODAY_NEXT"
+          style={{ fontSize: 20, color: ACCENT, padding: 2 }}
+        />
+      </FlexWidget>
+    </WidgetCard>
   );
 };

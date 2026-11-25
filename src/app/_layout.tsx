@@ -1,28 +1,27 @@
 import "@/global.css";
 
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { PortalHost } from "@rn-primitives/portal";
 import { Stack } from "expo-router";
 import { ThemeProvider } from "expo-router/react-navigation";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Platform, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useUniwind } from "uniwind";
-import { Text } from "@/components/ui/text";
 import { initializeSchema } from "@/db/client";
 import { seed } from "@/db/seed";
 import { loadStreakRow } from "@/db/streak";
-import { NAV_THEME, schemeFromTheme, TALLY_THEME } from "@/lib/theme";
+import { NAV_THEME, schemeFromTheme } from "@/lib/theme";
+import { syncTodayWidget } from "@/services/sync-today-widget";
+import { refreshWidgets } from "@/services/widget-refresh";
 import { useStreakStore } from "@/stores/use-streak-store";
-import { WidgetTaskHandler } from "@/widgets/widget-task-handler";
 
-if (Platform.OS === "android") {
-  try {
-    const widgetMod = require("react-native-android-widget");
-    widgetMod?.registerWidgetTaskHandler?.(WidgetTaskHandler);
-  } catch {
-    // Widget registration is unavailable on this build/configuration.
-  }
-}
+// Hold the native splash until the database is ready. Letting it hide on JS
+// mount left a bare "Loading…" frame between the splash and the first screen.
+SplashScreen.preventAutoHideAsync().catch(() => {
+  // Already hidden, or no native splash in this build.
+});
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -43,6 +42,8 @@ const bootstrap = async () => {
       useStreakStore.getState().setRow(row);
       useStreakStore.getState().refreshMilestones();
     }
+    await syncTodayWidget();
+    refreshWidgets();
     bootstrapped = true;
   } catch (err) {
     // Leave the flag false so a later attempt can retry a failed boot.
@@ -59,18 +60,31 @@ export default function RootLayout() {
   useEffect(() => {
     let cancelled = false;
     bootstrap().finally(() => {
-      if (!cancelled) setReady(true);
+      if (cancelled) return;
+      setReady(true);
     });
     return () => {
       cancelled = true;
     };
   }, []);
 
+  // Hidden from an effect so the first ready frame is mounted underneath it and
+  // the splash crossfades straight into the app.
+  useEffect(() => {
+    if (ready) {
+      SplashScreen.hideAsync().catch(() => {
+        // Nothing to hide.
+      });
+    }
+  }, [ready]);
+
+  if (!ready) return null;
+
   return (
-    <ThemeProvider value={navTheme}>
-      <StatusBar style={scheme === "dark" ? "light" : "dark"} />
-      {ready ? (
-        <>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider value={navTheme}>
+        <StatusBar style={scheme === "dark" ? "light" : "dark"} />
+        <BottomSheetModalProvider>
           <Stack
             screenOptions={{
               headerShown: false,
@@ -91,17 +105,21 @@ export default function RootLayout() {
                 headerTitleStyle: { fontWeight: "800", fontSize: 20 },
               }}
             />
+            <Stack.Screen
+              name="about"
+              options={{
+                headerShown: true,
+                title: "About",
+                headerStyle: { backgroundColor: navTheme.colors.background },
+                headerTintColor: navTheme.colors.text,
+                headerShadowVisible: false,
+                headerTitleStyle: { fontWeight: "800", fontSize: 20 },
+              }}
+            />
           </Stack>
           <PortalHost />
-        </>
-      ) : (
-        <View className="flex-1 items-center justify-center gap-3 bg-background">
-          <ActivityIndicator color={TALLY_THEME[scheme].primary} />
-          <Text className="text-sm text-muted-foreground">
-            Preparing your training log…
-          </Text>
-        </View>
-      )}
-    </ThemeProvider>
+        </BottomSheetModalProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

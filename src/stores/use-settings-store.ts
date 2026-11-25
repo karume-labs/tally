@@ -12,6 +12,7 @@ export interface Settings {
   defaultRestSeconds: number;
   hapticsEnabled: boolean;
   soundEnabled: boolean;
+  autoAdvance: boolean;
   onboarded: boolean;
 }
 
@@ -36,9 +37,9 @@ export const useSettingsStore = create<SettingsStore>()(
       }),
       {
         name: "tally.settings",
-        // v2 added `onboarded`; the migration makes the old shape explicit
-        // instead of letting the gate read an undefined flag.
-        version: 2,
+        // v2 added `onboarded`, v3 added `autoAdvance`; the migration makes an
+        // old shape explicit instead of letting the gate read undefined.
+        version: 3,
         storage: createJSONStorage(() => settingsStorage),
         partialize: (state) => ({ settings: state.settings }),
         migrate: (persisted) => migrateSettings(persisted),

@@ -4,11 +4,10 @@ import * as schema from "@/db/schema";
 import { MAX_FREEZES, XP_PER_LEVEL, XP_VALUES } from "@/lib/constants";
 import { createId, dayKeyForTimestamp } from "@/lib/utils";
 import { calculateSessionXP, calculateStreak } from "@/services/streak";
+import { syncTodayWidget } from "@/services/sync-today-widget";
 import { syncStreakWidgetDots } from "@/services/sync-widget-dots";
-import {
-  writeStreakWidgetData,
-  writeTodayWidgetData,
-} from "@/services/widgetSync";
+import { refreshWidgets } from "@/services/widget-refresh";
+import { writeStreakWidgetData } from "@/services/widgetSync";
 import { useStreakStore } from "@/stores/use-streak-store";
 
 interface FinishWorkoutInput {
@@ -20,8 +19,6 @@ interface FinishWorkoutInput {
     prCount: number;
   };
   rolloverHour: number;
-  todayInfo: { dayName: string | null; isRest: boolean };
-  exerciseNames: string[];
 }
 
 /** Persists everything a finished session changes, then updates the widgets. */
@@ -29,8 +26,6 @@ export const finishWorkout = async ({
   sessionId,
   result,
   rolloverHour,
-  todayInfo,
-  exerciseNames,
 }: FinishWorkoutInput) => {
   const streak = useStreakStore.getState().row;
   const xpResult = calculateSessionXP(
@@ -122,12 +117,6 @@ export const finishWorkout = async ({
     updatedAt: Date.now(),
   });
   await syncStreakWidgetDots(dayKey);
-  writeTodayWidgetData({
-    dayName: todayInfo.dayName,
-    exerciseCount: exerciseNames.length,
-    exerciseNames,
-    isRestDay: todayInfo.isRest,
-    sessionActive: false,
-    updatedAt: Date.now(),
-  });
+  await syncTodayWidget(false);
+  refreshWidgets();
 };

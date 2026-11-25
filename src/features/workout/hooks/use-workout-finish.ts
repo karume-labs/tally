@@ -2,19 +2,13 @@ import { eq } from "drizzle-orm";
 import { useCallback } from "react";
 import { getDb } from "@/db/client";
 import * as schema from "@/db/schema";
-import {
-  getActiveSplit,
-  getTodayExercises,
-  parseSchedule,
-  todaySplitDayName,
-} from "@/db/today";
+import { getActiveSplit, parseSchedule, todaySplitDayName } from "@/db/today";
 import { useWorkoutSession } from "@/features/workout/hooks/use-workout-session";
 import { calculateSessionXP, calculateStreak } from "@/services/streak";
+import { syncTodayWidget } from "@/services/sync-today-widget";
 import { syncStreakWidgetDots } from "@/services/sync-widget-dots";
-import {
-  writeStreakWidgetData,
-  writeTodayWidgetData,
-} from "@/services/widgetSync";
+import { refreshWidgets } from "@/services/widget-refresh";
+import { writeStreakWidgetData } from "@/services/widgetSync";
 import { useStreakStore } from "@/stores/use-streak-store";
 import { useWorkoutStore } from "@/stores/use-workout-store";
 
@@ -93,17 +87,7 @@ export const useWorkoutFinish = () => {
       }
     }
 
-    const exercises = await getTodayExercises();
-    writeTodayWidgetData({
-      dayName:
-        todaySplitDayName(
-          parseSchedule((await getActiveSplit())?.schedule ?? "{}"),
-        ) ?? null,
-      exerciseCount: exercises?.length ?? 0,
-      exerciseNames: exercises?.map((e) => e.name) ?? [],
-      isRestDay: false,
-      sessionActive: false,
-      updatedAt: Date.now(),
-    });
+    await syncTodayWidget(false);
+    refreshWidgets();
   }, [store, session, streak, addXP, logWorkoutDay, refreshMilestones]);
 };

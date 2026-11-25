@@ -21,6 +21,10 @@ export default function SplitsLayout() {
         name="[id]"
         options={{ title: "Split", headerBackTitle: "Splits" }}
       />
+      <Stack.Screen
+        name="edit"
+        options={{ title: "Edit split", headerBackTitle: "Split" }}
+      />
     </Stack>
   );
 }

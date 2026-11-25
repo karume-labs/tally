@@ -99,7 +99,7 @@ export const StreakWidget = ({
       }
       clickAction="OPEN_STREAK"
     >
-      <WidgetCard style={{ padding: 8 }}>
+      <WidgetCard style={{ padding: 8 }} clickAction="OPEN_STREAK">
         <TextWidget text="🔥" style={{ fontSize: 24 } as TextWidgetStyle} />
         <TextWidget
           text={String(streak)}

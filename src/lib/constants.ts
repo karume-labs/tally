@@ -61,6 +61,7 @@ export const DEFAULT_SETTINGS = {
   defaultRestSeconds: 90,
   hapticsEnabled: true,
   soundEnabled: true,
+  autoAdvance: false,
   onboarded: false,
 } as const;
 

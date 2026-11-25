@@ -24,6 +24,7 @@ export interface WidgetStreakData {
 
 export interface WidgetTodayData {
   dayName: string | null;
+  tomorrowDayName?: string | null;
   exerciseCount: number;
   isRestDay: boolean;
   sessionActive: boolean;
@@ -100,35 +101,4 @@ export const writeLast7Dots = (dots: DayDot[]) => {
   const storage = getStorage();
   if (!storage) return;
   storage.set("widget.streak.last7", JSON.stringify(dots));
-};
-
-// ─── Refresh helper ──────────────────────────────────────────────────────────────
-let requestWidgetUpdateImpl:
-  | ((opts: {
-      widgetName: string;
-      renderWidget: (widget: React.ReactElement) => void;
-    }) => void)
-  | null = null;
-
-export const setRequestWidgetUpdate = (
-  impl: typeof requestWidgetUpdateImpl,
-) => {
-  requestWidgetUpdateImpl = impl;
-};
-
-export const refreshWidgets = () => {
-  const storage = getStorage();
-  if (storage) {
-    storage.set("widget.updatedAt", Date.now().toString());
-  }
-  if (requestWidgetUpdateImpl) {
-    requestWidgetUpdateImpl({
-      widgetName: "Streak",
-      renderWidget: () => {},
-    });
-    requestWidgetUpdateImpl({
-      widgetName: "TodayWorkout",
-      renderWidget: () => {},
-    });
-  }
 };

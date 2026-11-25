@@ -1,15 +1,12 @@
-import { Stack, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { Alert, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ActionButton } from "@/components/shared/ActionButton";
 import { RestTimerBar } from "@/components/shared/RestTimerBar";
 import { Text } from "@/components/ui/text";
-import {
-  getActiveSplit,
-  getExercisesForDay,
-  getTodaySplitDay,
-} from "@/db/today";
+import { getSplitDayById, loadExercisesForSplitDay } from "@/db/split-days";
+import { getTodaySplitDay } from "@/db/today";
 import { EmptyStateCard } from "@/features/workout/components/EmptyStateCard";
 import { SessionStatsCard } from "@/features/workout/components/SessionStatsCard";
 import { WorkoutExerciseCard } from "@/features/workout/components/WorkoutExerciseCard";
@@ -21,15 +18,19 @@ import {
   cancelRestNotification,
   scheduleRestNotification,
 } from "@/services/notifications";
+import { syncTodayWidget } from "@/services/sync-today-widget";
+import { refreshWidgets } from "@/services/widget-refresh";
 import { useSettingsStore } from "@/stores/use-settings-store";
 import { useWorkoutStore } from "@/stores/use-workout-store";
 
 export default function WorkoutScreen() {
   const router = useRouter();
+  const { dayId } = useLocalSearchParams<{ dayId?: string }>();
   const insets = useSafeAreaInsets();
   const store = useWorkoutStore();
   const session = useWorkoutSession();
   const rolloverHour = useSettingsStore((s) => s.settings.rolloverHour);
+  const autoAdvance = useSettingsStore((s) => s.settings.autoAdvance);
   const [todayInfo, setTodayInfo] = useState<{
     dayName: string | null;
     isRest: boolean;
@@ -49,7 +50,9 @@ export default function WorkoutScreen() {
     loadedRef.current = true;
     let cancelled = false;
     (async () => {
-      const day = await getTodaySplitDay();
+      // A day id means the user deliberately picked a skipped day's session.
+      const day =
+        dayId != null ? await getSplitDayById(dayId) : await getTodaySplitDay();
       if (cancelled) return;
       setTodayInfo({
         dayName: day?.name ?? null,
@@ -60,12 +63,10 @@ export default function WorkoutScreen() {
       if (useWorkoutStore.getState().sessionId == null) {
         session.startSession(day.id, day.name);
       }
-      const split = await getActiveSplit();
-      if (split == null) return;
       // A remount (Fast Refresh, returning from the summary) reuses the store
       // session, so only hydrate the plan when it has not been hydrated yet.
       if (useWorkoutStore.getState().exercises.length > 0) return;
-      const exercises = await getExercisesForDay(split.id, day.name);
+      const exercises = await loadExercisesForSplitDay(day.id);
       for (const ex of exercises) {
         const muscleGroup = isValidMuscleGroup(ex.muscleGroup)
           ? ex.muscleGroup
@@ -86,11 +87,17 @@ export default function WorkoutScreen() {
           sets: [],
         });
       }
+      // Only today's session belongs on the Today widget; a made-up day is
+      // logged but does not relabel the widget as today's plan.
+      if (dayId == null) {
+        await syncTodayWidget(true);
+        refreshWidgets();
+      }
     })();
     return () => {
       cancelled = true;
     };
-  }, [session]);
+  }, [session, dayId]);
 
   const startedAt = store.startedAt;
   useEffect(() => {
@@ -150,15 +157,12 @@ export default function WorkoutScreen() {
     const sessionId = store.sessionId;
     if (sessionId == null || finishing) return;
     setFinishing(true);
-    const exerciseNames = store.exercises.map((ex) => ex.name);
     try {
       const result = session.finishSession();
       await finishWorkout({
         sessionId,
         result,
         rolloverHour,
-        todayInfo,
-        exerciseNames,
       });
       router.replace("/workout/summary");
     } catch (err) {
@@ -171,9 +175,43 @@ export default function WorkoutScreen() {
   };
 
   const cancel = () => {
-    session.cancelSession();
-    router.back();
+    Alert.alert(
+      "Cancel this session?",
+      "Nothing logged so far will be saved.",
+      [
+        { text: "Keep going", style: "cancel" },
+        {
+          text: "Cancel session",
+          style: "destructive",
+          onPress: () => {
+            session.cancelSession();
+            syncTodayWidget(false).then(refreshWidgets);
+            router.back();
+          },
+        },
+      ],
+    );
   };
+
+  // Hands-free mode: when the rest timer runs out, move to the next exercise
+  // that still has sets left instead of waiting for a tap.
+  useEffect(() => {
+    if (!autoAdvance || store.restTimerEndsAt == null) return;
+    const remaining = store.restTimerEndsAt - Date.now();
+    if (remaining <= 0) return;
+    const timer = setTimeout(() => {
+      const next = useWorkoutStore
+        .getState()
+        .exercises.find(
+          (exercise) =>
+            exercise.sets.filter((set) => set.completed).length <
+            (exercise.targetSets ?? 0),
+        );
+      setActiveExerciseId(next?.exerciseId ?? null);
+      useWorkoutStore.getState().skipRest();
+    }, remaining + 250);
+    return () => clearTimeout(timer);
+  }, [autoAdvance, store.restTimerEndsAt]);
 
   return (
     <View className="flex-1 bg-background">
@@ -181,9 +219,23 @@ export default function WorkoutScreen() {
         <Stack.Screen
           options={{
             headerRight: () => (
-              <Text className="text-sm font-semibold text-muted-foreground">
-                {formatElapsed(elapsed)}
-              </Text>
+              <View className="flex-row items-center gap-3">
+                <Text className="text-sm font-semibold text-muted-foreground">
+                  {formatElapsed(elapsed)}
+                </Text>
+                {store.sessionId != null && (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Cancel session"
+                    onPress={cancel}
+                    className="rounded-lg border border-border px-2.5 py-1 active:opacity-70"
+                  >
+                    <Text className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Cancel
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
             ),
           }}
         />
@@ -218,8 +270,6 @@ export default function WorkoutScreen() {
               elapsed={elapsed}
               totalVolume={store.totalVolume}
               completedSets={store.completedSets}
-              hasSession={store.sessionId != null}
-              onCancel={cancel}
             />
 
             {store.restTimerEndsAt != null && (

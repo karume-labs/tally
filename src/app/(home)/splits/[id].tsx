@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Check } from "lucide-react-native";
+import { Check, Pencil } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useUniwind } from "uniwind";
@@ -95,9 +95,21 @@ export default function SplitDetailScreen() {
             {split.description}
           </Text>
         )}
+        <ActionButton
+          className="mt-4"
+          variant="secondary"
+          icon={Pencil}
+          label="Edit split"
+          onPress={() =>
+            router.push({
+              pathname: "/splits/edit",
+              params: { id: split.id },
+            })
+          }
+        />
         {!split.isActive && (
           <ActionButton
-            className="mt-5"
+            className="mt-2"
             icon={Check}
             label={activating ? "Activating…" : "Set as active"}
             disabled={activating}

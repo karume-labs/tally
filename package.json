@@ -36,6 +36,7 @@
     "prebuild": "expo prebuild --clean"
   },
   "dependencies": {
+    "@gorhom/bottom-sheet": "^5.2.14",
     "@rn-primitives/accordion": "^1.5.2",
     "@rn-primitives/alert-dialog": "^1.5.2",
     "@rn-primitives/aspect-ratio": "^1.5.2",

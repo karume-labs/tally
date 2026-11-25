@@ -1,8 +1,9 @@
 import { useFocusEffect, useRouter } from "expo-router";
-import { Layers } from "lucide-react-native";
+import { Layers, Plus } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useUniwind } from "uniwind";
+import { ActionButton } from "@/components/shared/ActionButton";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
@@ -66,6 +67,12 @@ export default function SplitsScreen() {
         Pick the program you are running. Exactly one split is active at a time,
         and today's workout follows its schedule.
       </Text>
+
+      <ActionButton
+        icon={Plus}
+        label="Build your own split"
+        onPress={() => router.push("/splits/edit")}
+      />
 
       {splits.length === 0 ? (
         <SectionCard>

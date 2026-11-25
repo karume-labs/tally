@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { ChevronRight, ListChecks } from "lucide-react-native";
+import { ChevronRight, Info, ListChecks } from "lucide-react-native";
 import { Pressable, ScrollView, Switch, View } from "react-native";
 import { useUniwind } from "uniwind";
 import { OptionChip } from "@/components/shared/OptionChip";
@@ -33,9 +33,12 @@ export default function SettingsScreen() {
     >
       <SectionCard title="Training">
         <View className="gap-2">
-          <Text className="text-base font-semibold">Rollover hour</Text>
-          <Text className="text-xs text-muted-foreground">
-            Workouts before this hour count toward the previous day.
+          <Text className="text-base font-semibold">Day boundary</Text>
+          <Text className="text-xs leading-4 text-muted-foreground">
+            Tally's log day starts here, not at midnight. With 06:00, a 1 a.m.
+            session still counts for yesterday — good for late nights. It moves
+            the streak day, the history dots and the widgets together. Your
+            split still follows the calendar weekday.
           </Text>
           <View className="mt-1 gap-2">
             {toRows(ROLLOVER_HOURS, 4).map((row) => (
@@ -97,6 +100,22 @@ export default function SettingsScreen() {
 
         <View className="mt-4 flex-row items-center justify-between gap-4 border-t border-border pt-4">
           <View className="flex-1 gap-1">
+            <Text className="text-base font-semibold">Hands-free sets</Text>
+            <Text className="text-xs text-muted-foreground">
+              When a rest timer ends, jump to the next exercise with sets left
+              so the workout keeps moving without a tap.
+            </Text>
+          </View>
+          <Switch
+            value={settings.autoAdvance}
+            onValueChange={(value) => setSettings({ autoAdvance: value })}
+            trackColor={{ false: colors.secondary, true: colors.primary }}
+            thumbColor={colors.background}
+          />
+        </View>
+
+        <View className="mt-4 flex-row items-center justify-between gap-4 border-t border-border pt-4">
+          <View className="flex-1 gap-1">
             <Text className="text-base font-semibold">Sound</Text>
             <Text className="text-xs text-muted-foreground">
               Play sounds for PRs and milestones.
@@ -131,6 +150,25 @@ export default function SettingsScreen() {
       </SectionCard>
 
       <BackupSection />
+
+      <SectionCard title="App">
+        <Pressable
+          accessibilityRole="button"
+          className="flex-row items-center justify-between gap-3 py-2 active:opacity-80"
+          onPress={() => router.push("/about")}
+        >
+          <View className="flex-row items-center gap-3">
+            <Icon as={Info} className="text-primary" size={20} />
+            <View className="gap-0.5">
+              <Text className="text-base font-semibold">About Tally</Text>
+              <Text className="text-xs text-muted-foreground">
+                Privacy, licence and how the domain works
+              </Text>
+            </View>
+          </View>
+          <Icon as={ChevronRight} className="text-muted-foreground" size={20} />
+        </Pressable>
+      </SectionCard>
 
       <Text className="pt-1 text-center text-xs text-muted-foreground">
         Tally 1.0 · offline-first workout tracker
