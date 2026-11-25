@@ -66,6 +66,9 @@ export default function WorkoutScreen() {
       startedAt: running.startedAt,
       dayName,
       totalSets: sessionSetTotal(running.exercises),
+      // The mirror effect below fills the focused exercise in as soon as one is
+      // open, including on this render.
+      exerciseName: null,
       nextName: first == null ? null : first.name,
     });
   }, []);
@@ -185,14 +188,6 @@ export default function WorkoutScreen() {
       Date.now(),
     );
     if (logged == null) return;
-    const live = useWorkoutStore.getState();
-    const liveNext = pickNextExercise(live.exercises, activeExerciseId);
-    updateLiveWorkout({
-      completedSets: live.completedSets,
-      totalSets: sessionSetTotal(live.exercises),
-      nextName: liveNext == null ? null : liveNext.name,
-      resting: live.restTimerEndsAt != null,
-    });
     // Weight and reps stay put for the next set: repeating the same numbers is
     // the common case, and hands-free mode should not need a retype.
     setRpe("");
@@ -254,7 +249,6 @@ export default function WorkoutScreen() {
     // The banner is derived from the store, so clearing the timer also clears
     // the "Rest complete" state on the next render.
     useWorkoutStore.getState().skipRest();
-    updateLiveWorkout({ resting: false });
     if (hapticsEnabled) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
         () => {
@@ -285,6 +279,28 @@ export default function WorkoutScreen() {
     setReps(last?.reps != null ? String(last.reps) : "");
     setRpe("");
   }, [activeExerciseId]);
+
+  // Everything the ongoing notification shows is derived from the session, so
+  // one effect pushes it: the title follows the open exercise, and while a rest
+  // is running its deadline takes over the chronometer as a countdown.
+  useEffect(() => {
+    if (store.sessionId == null) return;
+    const next = pickNextExercise(store.exercises, activeExerciseId);
+    updateLiveWorkout({
+      completedSets: store.completedSets,
+      totalSets: sessionSetTotal(store.exercises),
+      exerciseName: activeExercise?.name ?? null,
+      nextName: next == null ? null : next.name,
+      restEndsAt: store.restTimerEndsAt,
+    });
+  }, [
+    store.sessionId,
+    store.exercises,
+    store.completedSets,
+    store.restTimerEndsAt,
+    activeExercise,
+    activeExerciseId,
+  ]);
 
   const nextUp = pickNextExercise(store.exercises, activeExerciseId);
   const nextUpName =

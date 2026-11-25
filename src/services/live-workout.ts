@@ -10,27 +10,32 @@ const SMALL_ICON = "ic_stat_tally";
 const ACCENT = "#ffd340";
 
 interface LiveWorkoutState {
-  /** Session start, used as the chronometer base. */
+  /** Session start, used as the chronometer base while training. */
   startedAt: number;
   dayName: string;
+  /** The exercise card that is open, which is what the title shows. */
+  exerciseName: string | null;
   completedSets: number;
   totalSets: number;
   nextName: string | null;
-  resting: boolean;
+  /** Set while resting; the chronometer counts down to it. */
+  restEndsAt: number | null;
 }
 
 interface LiveWorkoutStart {
   startedAt: number;
   dayName: string;
   totalSets: number;
+  exerciseName: string | null;
   nextName: string | null;
 }
 
 interface LiveWorkoutUpdate {
   completedSets: number;
   totalSets: number;
+  exerciseName: string | null;
   nextName: string | null;
-  resting: boolean;
+  restEndsAt: number | null;
 }
 
 const isAndroid = Platform.OS === "android";
@@ -38,9 +43,15 @@ const isAndroid = Platform.OS === "android";
 let state: LiveWorkoutState | null = null;
 let channelReady = false;
 
-// The service needs a runner before a notification can hold it. It never
-// settles on purpose: endLiveWorkout stops the service instead.
+// Android is the only platform with a persistent, live surface for this. iOS
+// has no ongoing notification: a posted notification is static, and the Lock
+// Screen / Dynamic Island version is an ActivityKit Live Activity, which needs
+// a widget extension in the native project (SDK 56+ exposes that through
+// expo-widgets' createLiveActivity). Every call below is therefore a no-op on
+// iOS until that target exists, rather than pretending to show something.
 if (isAndroid) {
+  // The service needs a runner before a notification can hold it. It never
+  // settles on purpose: endLiveWorkout stops the service instead.
   notifee.registerForegroundService(
     () =>
       new Promise<void>(() => {
@@ -61,24 +72,27 @@ const ensureChannel = async () => {
   channelReady = true;
 };
 
+const isResting = (current: LiveWorkoutState): boolean =>
+  current.restEndsAt != null && current.restEndsAt > Date.now();
+
 const bodyFor = (current: LiveWorkoutState): string => {
   const progress = `${current.completedSets} of ${current.totalSets} sets`;
-  if (current.nextName == null) {
-    return current.resting
-      ? `${progress} · resting`
-      : `${progress} · all sets in`;
+  if (isResting(current)) {
+    return current.nextName == null
+      ? `Resting · ${progress}`
+      : `Resting · ${current.nextName} up next`;
   }
-  return current.resting
-    ? `${progress} · resting before ${current.nextName}`
-    : `${progress} · ${current.nextName} up next`;
+  if (current.nextName == null) return `${progress} · all sets logged`;
+  return `${progress} · ${current.nextName} up next`;
 };
 
 const post = async (current: LiveWorkoutState) => {
   await ensureChannel();
   const max = Math.max(current.totalSets, 1);
+  const resting = isResting(current);
   await notifee.displayNotification({
     id: NOTIFICATION_ID,
-    title: current.dayName,
+    title: current.exerciseName ?? current.dayName,
     body: bodyFor(current),
     android: {
       channelId: CHANNEL_ID,
@@ -91,10 +105,14 @@ const post = async (current: LiveWorkoutState) => {
       onlyAlertOnce: true,
       smallIcon: SMALL_ICON,
       color: ACCENT,
-      // Count-up chronometer from the session's first set.
+      // One chronometer can only do one job: while resting it counts the rest
+      // down, otherwise it counts the session up. Android renders both itself,
+      // so they keep ticking when the app is backgrounded.
       showChronometer: true,
-      chronometerDirection: "up",
-      timestamp: current.startedAt,
+      chronometerDirection: resting ? "down" : "up",
+      timestamp: resting
+        ? (current.restEndsAt ?? current.startedAt)
+        : current.startedAt,
       showTimestamp: false,
       progress: {
         max,
@@ -113,7 +131,7 @@ const report = (err: unknown) => {
 
 export const startLiveWorkout = async (input: LiveWorkoutStart) => {
   if (!isAndroid) return;
-  state = { ...input, completedSets: 0, resting: false };
+  state = { ...input, completedSets: 0, restEndsAt: null };
   try {
     await post(state);
   } catch (err) {
