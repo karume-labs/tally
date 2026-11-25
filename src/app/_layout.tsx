@@ -14,6 +14,7 @@ import { useUniwind } from "uniwind";
 import { initializeSchema } from "@/db/client";
 import { seed } from "@/db/seed";
 import { loadStreakRow } from "@/db/streak";
+import { cleanupAbandonedSessions } from "@/features/workout/services/cleanup-abandoned-sessions";
 import { NAV_THEME, schemeFromTheme } from "@/lib/theme";
 import { handleLiveWorkoutEvent } from "@/services/live-workout-actions";
 import { syncTodayWidget } from "@/services/sync-today-widget";
@@ -40,6 +41,14 @@ const bootstrap = async () => {
   try {
     await initializeSchema();
     await seed();
+    // Boot is the only moment where no session can be in memory, so anything
+    // still open here is left over from a run that never finished.
+    const cleanup = await cleanupAbandonedSessions();
+    if (cleanup.discarded > 0 || cleanup.closed > 0) {
+      console.info(
+        `[tally.boot] sessions settled: ${cleanup.discarded} discarded, ${cleanup.closed} closed`,
+      );
+    }
     const row = await loadStreakRow();
     if (row) {
       useStreakStore.getState().setRow(row);
