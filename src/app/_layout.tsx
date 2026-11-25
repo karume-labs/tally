@@ -7,12 +7,15 @@ import { ThemeProvider } from "expo-router/react-navigation";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
+import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import notifee from "react-native-notify-kit";
 import { useUniwind } from "uniwind";
 import { initializeSchema } from "@/db/client";
 import { seed } from "@/db/seed";
 import { loadStreakRow } from "@/db/streak";
 import { NAV_THEME, schemeFromTheme } from "@/lib/theme";
+import { handleLiveWorkoutEvent } from "@/services/live-workout-actions";
 import { syncTodayWidget } from "@/services/sync-today-widget";
 import { refreshWidgets } from "@/services/widget-refresh";
 import { useStreakStore } from "@/stores/use-streak-store";
@@ -66,6 +69,13 @@ export default function RootLayout() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  // Notification actions taken while the app is open come through the
+  // foreground handler; the background one only covers a killed process.
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+    return notifee.onForegroundEvent(handleLiveWorkoutEvent);
   }, []);
 
   // Hidden from an effect so the first ready frame is mounted underneath it and

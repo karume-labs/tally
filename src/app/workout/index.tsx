@@ -26,6 +26,7 @@ import {
   startLiveWorkout,
   updateLiveWorkout,
 } from "@/services/live-workout";
+import { registerLiveWorkoutHandlers } from "@/services/live-workout-actions";
 import {
   cancelRestNotification,
   scheduleRestNotification,
@@ -210,7 +211,7 @@ export default function WorkoutScreen() {
     setRpe("");
   };
 
-  const finish = async () => {
+  const finish = useCallback(async () => {
     const sessionId = store.sessionId;
     if (sessionId == null || finishing) return;
     setFinishing(true);
@@ -221,6 +222,9 @@ export default function WorkoutScreen() {
         result,
         rolloverHour,
       });
+      // The widget was told a session started; clearing it here covers finishing
+      // from the notification, where no screen transition follows.
+      syncTodayWidget(false).then(refreshWidgets);
       router.replace("/workout/summary");
     } catch (err) {
       // The session is already closed in memory, so surface the failure rather
@@ -230,7 +234,7 @@ export default function WorkoutScreen() {
       await endLiveWorkout();
       setFinishing(false);
     }
-  };
+  }, [session, router, rolloverHour, store.sessionId, finishing]);
 
   const cancel = () => {
     Alert.alert(
@@ -326,12 +330,20 @@ export default function WorkoutScreen() {
       : null;
   const allDone = isSessionComplete(store.exercises);
 
-  const skipRest = () => {
+  const skipRest = useCallback(() => {
     handleRestEnd();
     if (!autoAdvance) return;
     const next = pickNextExercise(store.exercises, activeExerciseId);
     if (next != null) setActiveExerciseId(next.exerciseId);
-  };
+  }, [handleRestEnd, autoAdvance, store.exercises, activeExerciseId]);
+
+  // The notification's actions run the same handlers as the on-screen buttons,
+  // so they clear the timer, advance focus and navigate exactly as a tap does.
+  // Registering again after every render keeps them pointed at current state.
+  useEffect(
+    () => registerLiveWorkoutHandlers({ skipRest, finish }),
+    [skipRest, finish],
+  );
 
   return (
     <View className="flex-1 bg-background">

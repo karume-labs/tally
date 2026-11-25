@@ -1,8 +1,13 @@
 import { Platform } from "react-native";
 import notifee, {
+  type AndroidAction,
   AndroidForegroundServiceType,
   AndroidImportance,
 } from "react-native-notify-kit";
+import {
+  FINISH_WORKOUT_ACTION,
+  SKIP_REST_ACTION,
+} from "./live-workout-actions";
 
 const CHANNEL_ID = "live-workout";
 const NOTIFICATION_ID = "live-workout";
@@ -75,6 +80,27 @@ const ensureChannel = async () => {
 const isResting = (current: LiveWorkoutState): boolean =>
   current.restEndsAt != null && current.restEndsAt > Date.now();
 
+// Actions carry no launchActivity, so tapping one stays in the shade: notifee
+// only starts its invisible receiver activity for these.
+const actionsFor = (current: LiveWorkoutState): AndroidAction[] => {
+  const actions: AndroidAction[] = [];
+  if (isResting(current)) {
+    actions.push({
+      title: "Skip rest",
+      pressAction: { id: SKIP_REST_ACTION },
+    });
+  }
+  // Finishing an empty session would file a workout with nothing in it; that is
+  // the same session the abandon guard throws away.
+  if (current.completedSets > 0) {
+    actions.push({
+      title: "Finish",
+      pressAction: { id: FINISH_WORKOUT_ACTION },
+    });
+  }
+  return actions;
+};
+
 const bodyFor = (current: LiveWorkoutState): string => {
   const progress = `${current.completedSets} of ${current.totalSets} sets`;
   if (isResting(current)) {
@@ -90,6 +116,7 @@ const post = async (current: LiveWorkoutState) => {
   await ensureChannel();
   const max = Math.max(current.totalSets, 1);
   const resting = isResting(current);
+  const actions = actionsFor(current);
   await notifee.displayNotification({
     id: NOTIFICATION_ID,
     title: current.exerciseName ?? current.dayName,
@@ -122,6 +149,7 @@ const post = async (current: LiveWorkoutState) => {
         indeterminate: current.totalSets === 0,
       },
       pressAction: { id: "default", launchActivity: "default" },
+      actions: actions.length > 0 ? actions : undefined,
     },
   });
 };
