@@ -1,5 +1,6 @@
+import * as Haptics from "expo-haptics";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ActionButton } from "@/components/shared/ActionButton";
@@ -11,8 +12,13 @@ import { EmptyStateCard } from "@/features/workout/components/EmptyStateCard";
 import { SessionStatsCard } from "@/features/workout/components/SessionStatsCard";
 import { WorkoutExerciseCard } from "@/features/workout/components/WorkoutExerciseCard";
 import { WorkoutFooter } from "@/features/workout/components/WorkoutFooter";
+import { useAutoAdvance } from "@/features/workout/hooks/use-auto-advance";
 import { useWorkoutSession } from "@/features/workout/hooks/use-workout-session";
 import { finishWorkout } from "@/features/workout/services/finish-workout";
+import {
+  isSessionComplete,
+  pickNextExercise,
+} from "@/features/workout/services/next-exercise";
 import { isValidEquipment, isValidMuscleGroup } from "@/lib/utils";
 import {
   cancelRestNotification,
@@ -31,6 +37,7 @@ export default function WorkoutScreen() {
   const session = useWorkoutSession();
   const rolloverHour = useSettingsStore((s) => s.settings.rolloverHour);
   const autoAdvance = useSettingsStore((s) => s.settings.autoAdvance);
+  const hapticsEnabled = useSettingsStore((s) => s.settings.hapticsEnabled);
   const [todayInfo, setTodayInfo] = useState<{
     dayName: string | null;
     isRest: boolean;
@@ -148,8 +155,8 @@ export default function WorkoutScreen() {
       Date.now(),
     );
     if (logged == null) return;
-    setWeight("");
-    setReps("");
+    // Weight and reps stay put for the next set: repeating the same numbers is
+    // the common case, and hands-free mode should not need a retype.
     setRpe("");
   };
 
@@ -193,25 +200,54 @@ export default function WorkoutScreen() {
     );
   };
 
-  // Hands-free mode: when the rest timer runs out, move to the next exercise
-  // that still has sets left instead of waiting for a tap.
+  const handleRestEnd = useCallback(() => {
+    // The banner is derived from the store, so clearing the timer also clears
+    // the "Rest complete" state on the next render.
+    useWorkoutStore.getState().skipRest();
+    if (hapticsEnabled) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
+        () => {
+          // Haptics are best-effort.
+        },
+      );
+    }
+  }, [hapticsEnabled]);
+
+  useAutoAdvance({
+    enabled: autoAdvance,
+    exercises: store.exercises,
+    activeExerciseId,
+    restTimerEndsAt: store.restTimerEndsAt,
+    onAdvance: setActiveExerciseId,
+    onRestEnd: handleRestEnd,
+  });
+
+  // Opening an exercise seeds the inputs from its last logged set, so a whole
+  // exercise is one tap per set once the first numbers are in.
   useEffect(() => {
-    if (!autoAdvance || store.restTimerEndsAt == null) return;
-    const remaining = store.restTimerEndsAt - Date.now();
-    if (remaining <= 0) return;
-    const timer = setTimeout(() => {
-      const next = useWorkoutStore
-        .getState()
-        .exercises.find(
-          (exercise) =>
-            exercise.sets.filter((set) => set.completed).length <
-            (exercise.targetSets ?? 0),
-        );
-      setActiveExerciseId(next?.exerciseId ?? null);
-      useWorkoutStore.getState().skipRest();
-    }, remaining + 250);
-    return () => clearTimeout(timer);
-  }, [autoAdvance, store.restTimerEndsAt]);
+    if (activeExerciseId == null) return;
+    const exercise = useWorkoutStore
+      .getState()
+      .exercises.find((row) => row.exerciseId === activeExerciseId);
+    const last = exercise?.sets[exercise.sets.length - 1];
+    setWeight(last?.weight != null ? String(last.weight) : "");
+    setReps(last?.reps != null ? String(last.reps) : "");
+    setRpe("");
+  }, [activeExerciseId]);
+
+  const nextUp = pickNextExercise(store.exercises, activeExerciseId);
+  const nextUpName =
+    nextUp != null && nextUp.exerciseId !== activeExerciseId
+      ? nextUp.name
+      : null;
+  const allDone = isSessionComplete(store.exercises);
+
+  const skipRest = () => {
+    handleRestEnd();
+    if (!autoAdvance) return;
+    const next = pickNextExercise(store.exercises, activeExerciseId);
+    if (next != null) setActiveExerciseId(next.exerciseId);
+  };
 
   return (
     <View className="flex-1 bg-background">
@@ -275,7 +311,13 @@ export default function WorkoutScreen() {
             {store.restTimerEndsAt != null && (
               <RestTimerBar
                 endsAt={store.restTimerEndsAt}
-                onSkip={store.skipRest}
+                totalSeconds={
+                  store.exercises.find(
+                    (exercise) => exercise.exerciseId === activeExerciseId,
+                  )?.restSeconds
+                }
+                nextName={nextUpName}
+                onSkip={skipRest}
               />
             )}
 
@@ -299,6 +341,14 @@ export default function WorkoutScreen() {
                 />
               );
             })}
+
+            {allDone && autoAdvance && (
+              <View className="rounded-2xl border border-primary/40 bg-primary/10 px-4 py-3">
+                <Text className="text-sm font-semibold text-primary">
+                  Every set is logged. Finish when you're ready.
+                </Text>
+              </View>
+            )}
 
             <EmptyStateCard
               hasExercises={store.exercises.length > 0}

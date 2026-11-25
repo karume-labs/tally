@@ -71,10 +71,12 @@ export const applyLogSet = (
 
   const { totalVolume, completedSets } = recomputeTotals(exercises);
 
+  // A zero-rest exercise must clear the previous timer; keeping it would leave
+  // a countdown running that belongs to an earlier exercise.
   const restTimerEndsAt =
     completedAt != null && exercise.restSeconds > 0
       ? completedAt + exercise.restSeconds * 1000
-      : snapshot.restTimerEndsAt;
+      : null;
 
   return {
     newSet,
