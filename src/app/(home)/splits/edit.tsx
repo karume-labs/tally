@@ -102,8 +102,8 @@ export default function SplitEditScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <Text className="text-sm text-muted-foreground">
-        Days cycle across the week from Monday. Rename a day to "Rest" to keep
-        it as a recovery day.
+        Days cycle across the week from Monday. Switch a day to rest to keep it
+        as a recovery day — the name can be anything.
       </Text>
       <SplitEditor
         initial={draft}

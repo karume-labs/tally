@@ -69,6 +69,7 @@ export const toSplitInput = (draft: SplitDraft): SplitInput => {
     .map((day) => ({
       id: day.id,
       name: day.name.trim(),
+      isRestDay: day.isRestDay,
       exercises: day.exercises.map((exercise) => ({
         exerciseId: exercise.exerciseId,
         targetSets: exercise.targetSets,

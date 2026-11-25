@@ -38,6 +38,16 @@ export const parseSchedule = (raw: string): Record<string, string> => {
   }
 };
 
+/**
+ * Rest is a stored flag on the day. The name check only covers rows written
+ * before the flag was editable, when naming a day "Rest" was the only way.
+ */
+export const isRestDayRow = (
+  day: { name: string; isRestDay: boolean | null } | undefined,
+): boolean =>
+  day != null &&
+  (day.isRestDay === true || day.name.trim().toLowerCase() === "rest");
+
 /** Returns the split-day name assigned to today (locale weekday), or null. */
 /** Weekday key ("mon", "tue", …) for a date, using the same keys as the schedule. */
 export const weekdayKeyFor = (date: Date): (typeof WEEKDAY_KEYS)[number] =>
@@ -151,7 +161,7 @@ export const getTodaySplitDay = async (): Promise<{
   return {
     id: day.id,
     name: day.name,
-    isRestDay: day.isRestDay ?? dayName.toLowerCase() === "rest",
+    isRestDay: isRestDayRow(day),
   };
 };
 
@@ -165,9 +175,21 @@ export async function getTodayInfo(): Promise<{
   if (!split) return null;
   const schedule = parseSchedule(split.schedule);
   const dayName = todaySplitDayName(schedule);
-  return {
-    dayName,
-    isRestDay: dayName != null && dayName.toLowerCase() === "rest",
-    schedule,
-  };
+  if (dayName == null) return { dayName, isRestDay: false, schedule };
+
+  const rows = await getDb()
+    .select({
+      name: schema.splitDays.name,
+      isRestDay: schema.splitDays.isRestDay,
+    })
+    .from(schema.splitDays)
+    .where(
+      and(
+        eq(schema.splitDays.splitId, split.id),
+        eq(schema.splitDays.name, dayName),
+      ),
+    )
+    .limit(1);
+
+  return { dayName, isRestDay: isRestDayRow(rows[0]), schedule };
 }

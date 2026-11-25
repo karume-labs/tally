@@ -6,6 +6,7 @@ import * as schema from "./schema";
 export interface SplitDayInput {
   id?: string;
   name: string;
+  isRestDay: boolean;
   exercises: SplitDayExerciseInput[];
 }
 
@@ -27,8 +28,8 @@ const WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 
 /**
  * The weekly schedule a hand-built split uses: its day templates cycle across
- * Monday–Sunday. Rest is the absence of a day, not a row, unless the user adds
- * a day literally named "Rest" — which is treated as a rest day everywhere.
+ * Monday–Sunday. A rest day still occupies its slot; whether it is recovery is
+ * the day's `isRestDay` flag, never its name.
  */
 export const buildSchedule = (dayNames: string[]): Record<string, string> => {
   const schedule: Record<string, string> = {};
@@ -92,7 +93,7 @@ export const createSplit = async (input: SplitInput): Promise<string> => {
         splitId,
         name: day.name,
         dayOrder: index,
-        isRestDay: day.name.toLowerCase() === "rest",
+        isRestDay: day.isRestDay,
       })
       .run();
     await replaceDayExercises(dayId, day);
@@ -142,11 +143,10 @@ export const updateSplit = async (
   }
 
   for (const [index, day] of input.days.entries()) {
-    const isRestDay = day.name.toLowerCase() === "rest";
     if (day.id != null && existingDays.some((row) => row.id === day.id)) {
       await db
         .update(schema.splitDays)
-        .set({ name: day.name, dayOrder: index, isRestDay })
+        .set({ name: day.name, dayOrder: index, isRestDay: day.isRestDay })
         .where(eq(schema.splitDays.id, day.id))
         .run();
       await replaceDayExercises(day.id, day);
@@ -160,7 +160,7 @@ export const updateSplit = async (
         splitId,
         name: day.name,
         dayOrder: index,
-        isRestDay,
+        isRestDay: day.isRestDay,
       })
       .run();
     await replaceDayExercises(dayId, day);

@@ -1,9 +1,11 @@
-import { addDays, startOfDay } from "date-fns";
+import { addDays } from "date-fns";
 import { eq } from "drizzle-orm";
+import { dayKeyForTimestamp, parseDayKey, toDayKey } from "@/lib/utils";
 import { getDb } from "./client";
 import * as schema from "./schema";
 import {
   getActiveSplit,
+  isRestDayRow,
   parseSchedule,
   type TodayExercise,
   weekdayKeyFor,
@@ -36,7 +38,7 @@ export const listSplitDays = async (
     options.push({
       id: day.id,
       name: day.name,
-      isRestDay: day.isRestDay ?? false,
+      isRestDay: isRestDayRow(day),
       exerciseCount: links.length,
     });
   }
@@ -61,7 +63,7 @@ export const getSplitDayById = async (
     .limit(1);
   const day = rows[0];
   if (!day) return null;
-  return { id: day.id, name: day.name, isRestDay: day.isRestDay ?? false };
+  return { id: day.id, name: day.name, isRestDay: isRestDayRow(day) };
 };
 
 export const loadExercisesForSplitDay = async (
@@ -102,39 +104,59 @@ export const loadExercisesForSplitDay = async (
 export interface AdjacentDays {
   yesterdayName: string | null;
   yesterdayTrained: boolean;
+  yesterdayIsRest: boolean;
   tomorrowName: string | null;
+  tomorrowIsRest: boolean;
 }
 
 /**
  * The scheduled days either side of today. A rest day leaves the Today screen
  * with nothing to say, so it borrows what was done yesterday and what is next.
+ *
+ * Both the schedule lookup and the streak lookup have to agree on which day is
+ * "today": streak history is keyed by the rollover-adjusted log day, so after
+ * midnight but before the rollover hour the calendar day is still today.
  */
-export const getAdjacentDays = async (): Promise<AdjacentDays> => {
+export const getAdjacentDays = async (
+  rolloverHour = 6,
+): Promise<AdjacentDays> => {
   const split = await getActiveSplit();
   const schedule = parseSchedule(split?.schedule ?? "{}");
-  const today = startOfDay(new Date());
-  const yesterdayKey = weekdayKeyFor(addDays(today, -1));
-  const tomorrowKey = weekdayKeyFor(addDays(today, 1));
+  const today = parseDayKey(dayKeyForTimestamp(Date.now(), rolloverHour));
+  const yesterday = addDays(today, -1);
+  const tomorrow = addDays(today, 1);
 
-  const yesterdayName = schedule[yesterdayKey] ?? null;
-  const tomorrowName = schedule[tomorrowKey] ?? null;
+  const yesterdayName = schedule[weekdayKeyFor(yesterday)] ?? null;
+  const tomorrowName = schedule[weekdayKeyFor(tomorrow)] ?? null;
+
+  const dayRows =
+    split == null
+      ? []
+      : await getDb()
+          .select({
+            name: schema.splitDays.name,
+            isRestDay: schema.splitDays.isRestDay,
+          })
+          .from(schema.splitDays)
+          .where(eq(schema.splitDays.splitId, split.id));
+  const isRest = (name: string | null) =>
+    name != null && isRestDayRow(dayRows.find((row) => row.name === name));
 
   let yesterdayTrained = false;
-  if (yesterdayName != null && yesterdayName.toLowerCase() !== "rest") {
+  if (yesterdayName != null && !isRest(yesterdayName)) {
     const rows = await getDb()
       .select({ status: schema.streakHistory.status })
       .from(schema.streakHistory)
-      .where(eq(schema.streakHistory.dayKey, yesterdayKeyToKey(today)))
+      .where(eq(schema.streakHistory.dayKey, toDayKey(yesterday)))
       .limit(1);
     yesterdayTrained = rows[0]?.status === "workout";
   }
 
-  return { yesterdayName, yesterdayTrained, tomorrowName };
-};
-
-const yesterdayKeyToKey = (today: Date): string => {
-  const date = addDays(today, -1);
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const day = date.getDate().toString().padStart(2, "0");
-  return `${date.getFullYear()}-${month}-${day}`;
+  return {
+    yesterdayName,
+    yesterdayTrained,
+    yesterdayIsRest: isRest(yesterdayName),
+    tomorrowName,
+    tomorrowIsRest: isRest(tomorrowName),
+  };
 };

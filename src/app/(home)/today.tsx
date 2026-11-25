@@ -17,6 +17,7 @@ import { AdjacentDaysCard } from "@/features/workout/components/AdjacentDaysCard
 import { ExerciseGroupList } from "@/features/workout/components/ExerciseGroupList";
 import { StartRoutineButton } from "@/features/workout/components/StartRoutineButton";
 import { schemeFromTheme, TALLY_THEME } from "@/lib/theme";
+import { useSettingsStore } from "@/stores/use-settings-store";
 
 type TodayInfo = Awaited<ReturnType<typeof getTodayInfo>>;
 
@@ -26,10 +27,13 @@ export default function TodayScreen() {
   const accent = TALLY_THEME[scheme].primary;
   const [info, setInfo] = useState<TodayInfo>(null);
   const [exercises, setExercises] = useState<TodayExercise[]>([]);
+  const rolloverHour = useSettingsStore((s) => s.settings.rolloverHour);
   const [adjacent, setAdjacent] = useState<AdjacentDays>({
     yesterdayName: null,
     yesterdayTrained: false,
+    yesterdayIsRest: false,
     tomorrowName: null,
+    tomorrowIsRest: false,
   });
   const [loading, setLoading] = useState(true);
 
@@ -40,7 +44,7 @@ export default function TodayScreen() {
         const [todayInfo, todayExercises, around] = await Promise.all([
           getTodayInfo(),
           getTodayExercises(),
-          getAdjacentDays(),
+          getAdjacentDays(rolloverHour),
         ]);
         if (cancelled) return;
         setInfo(todayInfo);
@@ -51,7 +55,7 @@ export default function TodayScreen() {
       return () => {
         cancelled = true;
       };
-    }, []),
+    }, [rolloverHour]),
   );
 
   const hasSplit = info != null && info.dayName != null;

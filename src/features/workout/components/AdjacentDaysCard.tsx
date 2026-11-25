@@ -9,8 +9,9 @@ interface AdjacentDaysCardProps {
   adjacent: AdjacentDays;
 }
 
-const isRest = (name: string | null) =>
-  name == null || name.toLowerCase() === "rest";
+// Rest comes from the split day's flag, not its name: a rest day is whatever
+// the user called it.
+const isRest = (name: string | null, flag: boolean) => name == null || flag;
 
 export const AdjacentDaysCard = ({ adjacent }: AdjacentDaysCardProps) => (
   <SectionCard title="Around today">
@@ -23,7 +24,7 @@ export const AdjacentDaysCard = ({ adjacent }: AdjacentDaysCardProps) => (
           </Text>
           <Text className="text-sm font-semibold">
             {adjacent.yesterdayName ?? "Nothing scheduled"}
-            {!isRest(adjacent.yesterdayName) &&
+            {!isRest(adjacent.yesterdayName, adjacent.yesterdayIsRest) &&
               (adjacent.yesterdayTrained ? " · trained" : " · not logged")}
           </Text>
         </View>
@@ -39,7 +40,9 @@ export const AdjacentDaysCard = ({ adjacent }: AdjacentDaysCardProps) => (
             Tomorrow
           </Text>
           <Text className="text-sm font-semibold">
-            {isRest(adjacent.tomorrowName) ? "Rest day" : adjacent.tomorrowName}
+            {isRest(adjacent.tomorrowName, adjacent.tomorrowIsRest)
+              ? "Rest day"
+              : adjacent.tomorrowName}
           </Text>
         </View>
       </View>

@@ -1,5 +1,6 @@
 import { getAdjacentDays } from "@/db/split-days";
 import { getTodayExercises, getTodayInfo } from "@/db/today";
+import { useSettingsStore } from "@/stores/use-settings-store";
 import { writeTodayWidgetData } from "./widgetSync";
 
 /**
@@ -7,10 +8,11 @@ import { writeTodayWidgetData } from "./widgetSync";
  * so everything it shows has to be written to MMKV while the app is alive.
  */
 export const syncTodayWidget = async (sessionActive = false) => {
+  const rolloverHour = useSettingsStore.getState().settings.rolloverHour;
   const [info, exercises, adjacent] = await Promise.all([
     getTodayInfo(),
     getTodayExercises(),
-    getAdjacentDays(),
+    getAdjacentDays(rolloverHour),
   ]);
 
   writeTodayWidgetData({

@@ -87,6 +87,12 @@ export default function WorkoutScreen() {
       });
       if (day == null || day.isRestDay) return;
 
+      const open = useWorkoutStore.getState();
+      // Another day's session may still be in memory; reusing it would log this
+      // day's sets under that split day, so the old one is abandoned.
+      if (open.sessionId != null && open.splitDayId !== day.id) {
+        session.cancelSession();
+      }
       if (useWorkoutStore.getState().sessionId == null) {
         session.startSession(day.id, day.name);
       }
