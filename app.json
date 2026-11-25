@@ -36,6 +36,7 @@
         }
       ],
       "expo-status-bar",
+      "./plugins/with-live-workout-service",
       [
         "react-native-android-widget",
         {

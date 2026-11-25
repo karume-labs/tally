@@ -4,6 +4,7 @@ import {
   completedSets,
   isExerciseComplete,
   pickNextExercise,
+  sessionSetTotal,
 } from "./next-exercise";
 
 const set = (setNumber: number, completed: boolean): WorkoutSet => ({
@@ -60,6 +61,16 @@ describe("next-exercise", () => {
     const done = exercise("b", 1, [set(1, true)]);
     const next = exercise("c", 2, []);
     expect(pickNextExercise([current, done, next], "a")?.exerciseId).toBe("c");
+  });
+
+  test("sums programmed sets, counting untargeted exercises once", () => {
+    const exercises = [
+      exercise("a", 3, []),
+      exercise("b", null, []),
+      exercise("c", 2, []),
+    ];
+    expect(sessionSetTotal(exercises)).toBe(6);
+    expect(sessionSetTotal([])).toBe(0);
   });
 
   test("returns null when every exercise is complete", () => {

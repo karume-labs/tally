@@ -18,8 +18,14 @@ import { finishWorkout } from "@/features/workout/services/finish-workout";
 import {
   isSessionComplete,
   pickNextExercise,
+  sessionSetTotal,
 } from "@/features/workout/services/next-exercise";
 import { isValidEquipment, isValidMuscleGroup } from "@/lib/utils";
+import {
+  endLiveWorkout,
+  startLiveWorkout,
+  updateLiveWorkout,
+} from "@/services/live-workout";
 import {
   cancelRestNotification,
   scheduleRestNotification,
@@ -50,6 +56,20 @@ export default function WorkoutScreen() {
   const [finishing, setFinishing] = useState(false);
   const loadedRef = useRef(false);
 
+  // Rebuilds the ongoing-notification from the store, so calling it again after
+  // a remount just replaces the same notification instead of stacking one.
+  const announceLiveWorkout = useCallback((dayName: string) => {
+    const running = useWorkoutStore.getState();
+    if (running.startedAt == null) return;
+    const first = pickNextExercise(running.exercises, null);
+    startLiveWorkout({
+      startedAt: running.startedAt,
+      dayName,
+      totalSets: sessionSetTotal(running.exercises),
+      nextName: first == null ? null : first.name,
+    });
+  }, []);
+
   // Load the plan exactly once per visit, and only start a session after the
   // rest-day flag is known so opening this on a rest day cannot log a workout.
   useEffect(() => {
@@ -72,7 +92,10 @@ export default function WorkoutScreen() {
       }
       // A remount (Fast Refresh, returning from the summary) reuses the store
       // session, so only hydrate the plan when it has not been hydrated yet.
-      if (useWorkoutStore.getState().exercises.length > 0) return;
+      if (useWorkoutStore.getState().exercises.length > 0) {
+        announceLiveWorkout(day.name);
+        return;
+      }
       const exercises = await loadExercisesForSplitDay(day.id);
       for (const ex of exercises) {
         const muscleGroup = isValidMuscleGroup(ex.muscleGroup)
@@ -94,6 +117,7 @@ export default function WorkoutScreen() {
           sets: [],
         });
       }
+      announceLiveWorkout(day.name);
       // Only today's session belongs on the Today widget; a made-up day is
       // logged but does not relabel the widget as today's plan.
       if (dayId == null) {
@@ -104,7 +128,7 @@ export default function WorkoutScreen() {
     return () => {
       cancelled = true;
     };
-  }, [session, dayId]);
+  }, [session, dayId, announceLiveWorkout]);
 
   const startedAt = store.startedAt;
   useEffect(() => {
@@ -155,6 +179,14 @@ export default function WorkoutScreen() {
       Date.now(),
     );
     if (logged == null) return;
+    const live = useWorkoutStore.getState();
+    const liveNext = pickNextExercise(live.exercises, activeExerciseId);
+    updateLiveWorkout({
+      completedSets: live.completedSets,
+      totalSets: sessionSetTotal(live.exercises),
+      nextName: liveNext == null ? null : liveNext.name,
+      resting: live.restTimerEndsAt != null,
+    });
     // Weight and reps stay put for the next set: repeating the same numbers is
     // the common case, and hands-free mode should not need a retype.
     setRpe("");
@@ -177,6 +209,7 @@ export default function WorkoutScreen() {
       // than leaving the screen on a button that no longer responds.
       console.error("[workout] finish failed:", err);
     } finally {
+      await endLiveWorkout();
       setFinishing(false);
     }
   };
@@ -192,6 +225,7 @@ export default function WorkoutScreen() {
           style: "destructive",
           onPress: () => {
             session.cancelSession();
+            endLiveWorkout();
             syncTodayWidget(false).then(refreshWidgets);
             goBackOrToday();
           },
@@ -214,6 +248,7 @@ export default function WorkoutScreen() {
     // The banner is derived from the store, so clearing the timer also clears
     // the "Rest complete" state on the next render.
     useWorkoutStore.getState().skipRest();
+    updateLiveWorkout({ resting: false });
     if (hapticsEnabled) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
         () => {

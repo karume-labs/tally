@@ -12,6 +12,10 @@ export const completedSets = (exercise: WorkoutExercise): number =>
 export const isExerciseComplete = (exercise: WorkoutExercise): boolean =>
   completedSets(exercise) >= targetSets(exercise);
 
+/** Programmed sets for the whole session; untargeted exercises count as one. */
+export const sessionSetTotal = (exercises: WorkoutExercise[]): number =>
+  exercises.reduce((total, exercise) => total + targetSets(exercise), 0);
+
 /**
  * Where hands-free should point next. The current exercise keeps focus until its
  * programmed sets are done; after that the next unfinished exercise takes over.
