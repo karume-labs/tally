@@ -1,0 +1,20 @@
+diff --git a/android/src/main/java/app/notifee/core/NotificationManager.java b/android/src/main/java/app/notifee/core/NotificationManager.java
+--- a/android/src/main/java/app/notifee/core/NotificationManager.java
++++ b/android/src/main/java/app/notifee/core/NotificationManager.java
+@@ -157,6 +157,16 @@ class NotificationManager {
+             // must always keep at top
+             builder.setExtras(notificationModel.getData());
+ 
++            // TALLY_PROMOTED_ONGOING: ask Android 16 to promote this ongoing
++            // notification to a Live Update. Ignored below API 36 and when the
++            // user has Live Updates switched off, so this is a no-op there.
++            if (Build.VERSION.SDK_INT >= 36
++                && Boolean.TRUE.equals(androidModel.getAsForegroundService())) {
++              Bundle promotedOngoing = new Bundle();
++              promotedOngoing.putBoolean("android.requestPromotedOngoing", true);
++              builder.addExtras(promotedOngoing);
++            }
++
+             builder.setDeleteIntent(
+                 ReceiverService.createIntent(
+                     ReceiverService.DELETE_INTENT,

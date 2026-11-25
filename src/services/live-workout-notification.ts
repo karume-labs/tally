@@ -115,7 +115,7 @@ export const showLiveWorkoutNotification = async (
       ],
       ongoing: true,
       // The Android 16 Live Update opt-in is not exposed by the library; the
-      // config plugin patches it in for foreground-service notifications only.
+      // patch pinned in patches/ adds it for foreground-service notifications.
       onlyAlertOnce: true,
       smallIcon: SMALL_ICON,
       color: ACCENT,

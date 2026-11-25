@@ -112,5 +112,8 @@
     "lefthook": "^2.1.14",
     "typescript": "~6.0.3"
   },
-  "private": true
+  "private": true,
+  "patchedDependencies": {
+    "react-native-notify-kit@10.10.1": "patches/react-native-notify-kit@10.10.1.patch"
+  }
 }
