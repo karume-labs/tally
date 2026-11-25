@@ -13,6 +13,7 @@ type WidgetName = "Streak" | "TodayWorkout";
 const CLICK_ROUTES: Record<string, string> = {
   OPEN_STREAK: "tally:///streak",
   OPEN_TODAY: "tally:///today",
+  OPEN_WORKOUT: "tally:///workout",
 };
 
 const refreshToday = async () => {

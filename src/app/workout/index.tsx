@@ -193,11 +193,21 @@ export default function WorkoutScreen() {
           onPress: () => {
             session.cancelSession();
             syncTodayWidget(false).then(refreshWidgets);
-            router.back();
+            goBackOrToday();
           },
         },
       ],
     );
+  };
+
+  // The widget deep-links here on a cold start, where there is no screen to
+  // go back to; fall back to the Today tab instead of leaving the app.
+  const goBackOrToday = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+    router.replace("/today");
   };
 
   const handleRestEnd = useCallback(() => {
@@ -297,7 +307,7 @@ export default function WorkoutScreen() {
             <ActionButton
               variant="secondary"
               label="Back"
-              onPress={() => router.back()}
+              onPress={goBackOrToday}
             />
           </View>
         ) : (

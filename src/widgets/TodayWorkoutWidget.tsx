@@ -85,7 +85,7 @@ const TodayPanel = ({
           } as ViewStyle
         }
       >
-        {exerciseNames.slice(0, expanded ? 3 : 2).map((name) => (
+        {exerciseNames.slice(0, expanded ? 2 : 1).map((name) => (
           <TextWidget
             key={name}
             text={`• ${name}`}
@@ -93,6 +93,17 @@ const TodayPanel = ({
           />
         ))}
       </View>
+      {!sessionActive && (
+        <TextWidget
+          text="TAP TO START"
+          style={{
+            fontSize: 9,
+            color: ACCENT,
+            fontWeight: "bold",
+            letterSpacing: 1,
+          }}
+        />
+      )}
     </View>
   );
 };
@@ -143,8 +154,15 @@ export const TodayWorkoutWidget = ({
   const expanded = size === "4x2";
   const props: PanelProps = { ...data, expanded };
 
+  // The today panel is the shortcut that matters: it opens the workout screen
+  // directly so a session starts without a trip through the Today tab. Rest
+  // and split-less days have nothing to start, so they keep the tab route.
+  const canStartNow = index === 0 && data.dayName != null && !data.isRestDay;
+  const cardAction =
+    index === 2 ? "OPEN_STREAK" : canStartNow ? "OPEN_WORKOUT" : "OPEN_TODAY";
+
   return (
-    <WidgetCard style={{ padding: expanded ? 12 : 8 }} clickAction="OPEN_TODAY">
+    <WidgetCard style={{ padding: expanded ? 12 : 8 }} clickAction={cardAction}>
       <FlexWidget
         style={
           {
