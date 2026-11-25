@@ -33,10 +33,10 @@ const ensureChannel = async (): Promise<void> => {
   channelReady = true;
 };
 
-export async function scheduleRestNotification(
+export const scheduleRestNotification = async (
   endsAtMs: number,
   exerciseName: string,
-) {
+) => {
   const seconds = Math.max(1, Math.round((endsAtMs - Date.now()) / 1000));
   try {
     if (!(await ensurePermission())) return;
@@ -59,14 +59,14 @@ export async function scheduleRestNotification(
   } catch (err) {
     console.warn("[tally.notifications] rest notification failed:", err);
   }
-}
+};
 
-export async function cancelRestNotification() {
+export const cancelRestNotification = async () => {
   await Notifications.cancelScheduledNotificationAsync(
     String(REST_NOTIFICATION_ID),
   );
-}
+};
 
-export async function cancelAllScheduled() {
+export const cancelAllScheduled = async () => {
   await Notifications.cancelAllScheduledNotificationsAsync();
-}
+};

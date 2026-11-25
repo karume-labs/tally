@@ -2,7 +2,11 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import * as schema from "@/db/schema";
 import type { SplitDayInput, SplitInput } from "@/db/splits";
-import type { DraftDay, DraftExercise, SplitDraft } from "../types";
+import type {
+  DraftDay,
+  DraftExercise,
+  SplitDraft,
+} from "@/features/splits/types";
 
 /** Loads a split (with days, exercises and targets) into an editable draft. */
 export const loadSplitDraft = async (

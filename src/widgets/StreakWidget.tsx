@@ -45,8 +45,16 @@ export const StreakWidget = ({
         }
       >
         <TextWidget
-          text="🔥"
-          style={{ fontSize: 24, marginRight: 2 } as TextWidgetStyle}
+          text="STREAK"
+          style={
+            {
+              fontSize: 9,
+              color: "#7c7f88",
+              fontWeight: "bold",
+              letterSpacing: 1.2,
+              marginRight: 2,
+            } as TextWidgetStyle
+          }
         />
         <View
           style={
@@ -100,7 +108,17 @@ export const StreakWidget = ({
       clickAction="OPEN_STREAK"
     >
       <WidgetCard style={{ padding: 8 }} clickAction="OPEN_STREAK">
-        <TextWidget text="🔥" style={{ fontSize: 24 } as TextWidgetStyle} />
+        <TextWidget
+          text="STREAK"
+          style={
+            {
+              fontSize: 9,
+              color: "#7c7f88",
+              fontWeight: "bold",
+              letterSpacing: 1,
+            } as TextWidgetStyle
+          }
+        />
         <TextWidget
           text={String(streak)}
           style={

@@ -5,9 +5,9 @@ import { useUniwind } from "uniwind";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import type { LibraryExercise } from "@/features/exercises/types";
+import type { DraftDay } from "@/features/splits/types";
 import { schemeFromTheme, TALLY_THEME } from "@/lib/theme";
 import { cn } from "@/lib/utils";
-import type { DraftDay } from "../types";
 import { ExercisePickerSheet } from "./ExercisePickerSheet";
 
 interface SplitDayEditorProps {

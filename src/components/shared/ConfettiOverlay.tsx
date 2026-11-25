@@ -60,7 +60,7 @@ export const ConfettiOverlay = ({ visible, onDone }: ConfettiOverlayProps) => {
         />
       ))}
       <Text style={styles.label}>
-        {frame === 1 ? "PR!" : frame === 2 ? "🎉" : ""}
+        {frame === 1 ? "PR!" : frame === 2 ? "NICE!" : ""}
       </Text>
     </View>
   );

@@ -1,8 +1,8 @@
 import { View } from "react-native";
 import { OptionChip } from "@/components/shared/OptionChip";
 import { Text } from "@/components/ui/text";
+import type { ExerciseDraft } from "@/features/exercises/types";
 import { EQUIPMENT, type Equipment, MUSCLE_GROUPS } from "@/lib/constants";
-import type { ExerciseDraft } from "../types";
 
 const toRows = <T,>(items: readonly T[], perRow: number): T[][] =>
   Array.from({ length: Math.ceil(items.length / perRow) }, (_, index) =>

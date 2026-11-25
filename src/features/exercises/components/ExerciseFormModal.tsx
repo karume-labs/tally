@@ -5,9 +5,12 @@ import { useUniwind } from "uniwind";
 import { ActionButton } from "@/components/shared/ActionButton";
 import { Sheet } from "@/components/shared/Sheet";
 import { Text } from "@/components/ui/text";
+import type {
+  ExerciseDraft,
+  LibraryExercise,
+} from "@/features/exercises/types";
 import type { Equipment } from "@/lib/constants";
 import { schemeFromTheme, TALLY_THEME } from "@/lib/theme";
-import type { ExerciseDraft, LibraryExercise } from "../types";
 import { ExerciseAttributePicker } from "./ExerciseAttributePicker";
 
 interface ExerciseFormModalProps {

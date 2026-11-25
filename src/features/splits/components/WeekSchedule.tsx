@@ -1,8 +1,8 @@
 import { View } from "react-native";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { Text } from "@/components/ui/text";
-import { weekSchedule } from "../services/weekly-plan";
-import type { SplitDayPlan } from "../types";
+import { weekSchedule } from "@/features/splits/services/weekly-plan";
+import type { SplitDayPlan } from "@/features/splits/types";
 
 interface WeekScheduleProps {
   schedule: string;

@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getDb } from "@/db/client";
 import * as schema from "@/db/schema";
-import type { SplitExport } from "../types";
+import type { SplitExport } from "@/features/splits/types";
 
 export const useSplits = () => {
   const [rows, setRows] = useState<SplitExport[]>([]);

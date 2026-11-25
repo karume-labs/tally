@@ -2,8 +2,8 @@ import { Plus, Trash2 } from "lucide-react-native";
 import { View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import styles from "@/features/home/home-styles";
 import { useWorkoutStore } from "@/stores/use-workout-store";
-import styles from "../home-styles";
 
 interface HomeQuickActionsProps {
   onAddExercise: () => void;

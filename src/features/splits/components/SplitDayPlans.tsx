@@ -6,8 +6,8 @@ import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { loadExercisesForSplitDay } from "@/db/split-days";
 import type { TodayExercise } from "@/db/today";
+import type { SplitDayPlan } from "@/features/splits/types";
 import { ExerciseGroupList } from "@/features/workout/components/ExerciseGroupList";
-import type { SplitDayPlan } from "../types";
 
 interface SplitDayPlansProps {
   days: SplitDayPlan[];

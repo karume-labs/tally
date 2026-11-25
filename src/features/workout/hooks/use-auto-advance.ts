@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef } from "react";
+import {
+  completedSets,
+  pickNextExercise,
+} from "@/features/workout/services/next-exercise";
 import type { WorkoutExercise } from "@/shared/types/workout-types";
-import { completedSets, pickNextExercise } from "../services/next-exercise";
 
 /** A zero-rest completion gets a beat so the logged set stays visible. */
 const ZERO_REST_BEAT_MS = 1500;

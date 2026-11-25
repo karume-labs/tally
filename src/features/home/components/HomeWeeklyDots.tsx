@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import { Text } from "@/components/ui/text";
+import styles from "@/features/home/home-styles";
 import type { DayDot } from "@/services/streak";
-import styles from "../home-styles";
 
 const LABELS = ["M", "T", "W", "T", "F", "S", "S"] as const;
 const WORKOUT = "#4ade80";

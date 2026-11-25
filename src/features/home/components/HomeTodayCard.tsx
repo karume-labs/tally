@@ -1,8 +1,8 @@
 import { View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import styles from "@/features/home/home-styles";
 import type { WorkoutExercise } from "@/shared/types/workout-types";
-import styles from "../home-styles";
 
 const _WORKOUT = "#4ade80";
 const _MUTED = "#9ca3af";

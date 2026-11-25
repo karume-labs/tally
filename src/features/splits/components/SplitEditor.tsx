@@ -5,9 +5,9 @@ import { useUniwind } from "uniwind";
 import { ActionButton } from "@/components/shared/ActionButton";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { Text } from "@/components/ui/text";
+import type { DraftDay, SplitDraft } from "@/features/splits/types";
 import { schemeFromTheme, TALLY_THEME } from "@/lib/theme";
 import { useSettingsStore } from "@/stores/use-settings-store";
-import type { DraftDay, SplitDraft } from "../types";
 import { SplitDayEditor } from "./SplitDayEditor";
 
 interface SplitEditorProps {

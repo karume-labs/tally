@@ -8,7 +8,7 @@ import {
   notificationsGranted,
   permissionRows,
   requestPermissions,
-} from "../services/permissions";
+} from "@/features/onboarding/services/permissions";
 
 interface PermissionsStepProps {
   onDone: () => void;

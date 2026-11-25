@@ -22,6 +22,8 @@
     "reinstall-packages": "rm -rf node_modules bun.lock && bun i",
     "clean": "rm -rf .expo node_modules",
     "typecheck": "tsc --noEmit",
+    "guardrails": "bun run scripts/guardrails.ts",
+    "guardrails:strict": "bun run scripts/guardrails.ts --strict",
     "test": "bun test",
     "build": "bun run prebuild && ./android/gradlew -p android assembleRelease",
     "build:arm64": "./android/gradlew -p android assembleRelease -PreactNativeArchitectures=arm64-v8a",

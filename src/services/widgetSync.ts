@@ -3,13 +3,15 @@ import type { DayDot } from "./streak";
 
 let _storage: ReturnType<typeof createMMKV> | null = null;
 
-const getStorage = (): ReturnType<typeof createMMKV> => {
+const getStorage = (): ReturnType<typeof createMMKV> | null => {
   if (_storage) return _storage;
   try {
     _storage = createMMKV({ id: "tally-widget" });
   } catch (err) {
+    // No storage means the widget renders defaults; casting a null here only
+    // hid the failure from every caller that already checks for null.
     console.warn("[tally.widgetSync] MMKV init failed:", err);
-    _storage = null as unknown as ReturnType<typeof createMMKV>;
+    return null;
   }
   return _storage;
 };

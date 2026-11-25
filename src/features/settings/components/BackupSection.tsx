@@ -6,12 +6,15 @@ import { ActionButton } from "@/components/shared/ActionButton";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { Text } from "@/components/ui/text";
 import { loadStreakRow } from "@/db/streak";
+import {
+  pickBackupFile,
+  saveBackupToFile,
+} from "@/features/settings/services/backup-files";
 import type { FullBackup } from "@/services/backup-types";
 import { exportBackup, getExportedMetadata } from "@/services/export";
 import { importBackup } from "@/services/import";
 import { useStreakStore } from "@/stores/use-streak-store";
 import { useWorkoutStore } from "@/stores/use-workout-store";
-import { pickBackupFile, saveBackupToFile } from "../services/backup-files";
 
 const formatWhen = (timestamp: number): string =>
   new Date(timestamp).toLocaleString();

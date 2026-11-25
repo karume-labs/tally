@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import { StreakFlame } from "@/components/shared/StreakFlame";
 import { Text } from "@/components/ui/text";
-import styles from "../home-styles";
+import styles from "@/features/home/home-styles";
 
 interface HomeStreakCardProps {
   streak: { currentStreak: number; xp: number; level: number } | null;

@@ -19,7 +19,7 @@ export interface TodayExercise {
 }
 
 /** Returns the currently-active split, or null. */
-export async function getActiveSplit() {
+export const getActiveSplit = async () => {
   const db = getDb();
   const rows = await db
     .select()
@@ -27,7 +27,7 @@ export async function getActiveSplit() {
     .where(eq(schema.splits.isActive, true))
     .limit(1);
   return rows[0] ?? null;
-}
+};
 
 /** Parses a split's `schedule` JSON into { weekday: dayName }. */
 export const parseSchedule = (raw: string): Record<string, string> => {
@@ -48,11 +48,11 @@ export const isRestDayRow = (
   day != null &&
   (day.isRestDay === true || day.name.trim().toLowerCase() === "rest");
 
-/** Returns the split-day name assigned to today (locale weekday), or null. */
 /** Weekday key ("mon", "tue", …) for a date, using the same keys as the schedule. */
 export const weekdayKeyFor = (date: Date): (typeof WEEKDAY_KEYS)[number] =>
   WEEKDAY_KEYS[getDay(startOfDay(date))];
 
+/** Returns the split-day name assigned to today (locale weekday), or null. */
 export const todaySplitDayName = (
   schedule: Record<string, string> | null,
 ): string | null => {
@@ -63,10 +63,10 @@ export const todaySplitDayName = (
 };
 
 /** Returns a split day's ordered exercise list by split id + day name, or [] when the day has no rows. */
-export async function getExercisesForDay(
+export const getExercisesForDay = async (
   splitId: string,
   dayName: string,
-): Promise<TodayExercise[]> {
+): Promise<TodayExercise[]> => {
   const db = getDb();
   const days = await db
     .select()
@@ -117,10 +117,10 @@ export async function getExercisesForDay(
   return exercises.sort(
     (a: TodayExercise, b: TodayExercise) => a.order - b.order,
   );
-}
+};
 
 /** Returns today's ordered exercise list for the active split, or null if no active split / no today. */
-export async function getTodayExercises(): Promise<TodayExercise[] | null> {
+export const getTodayExercises = async (): Promise<TodayExercise[] | null> => {
   const split = await getActiveSplit();
   if (!split) return null;
 
@@ -129,7 +129,7 @@ export async function getTodayExercises(): Promise<TodayExercise[] | null> {
   if (!dayName) return null;
 
   return getExercisesForDay(split.id, dayName);
-}
+};
 
 /**
  * Returns the row id for today's split day. Sessions link to split_days, so
@@ -166,11 +166,11 @@ export const getTodaySplitDay = async (): Promise<{
 };
 
 /** Returns today's split-day name + isRestDay for the active split, or null. */
-export async function getTodayInfo(): Promise<{
+export const getTodayInfo = async (): Promise<{
   dayName: string | null;
   isRestDay: boolean;
   schedule: Record<string, string> | null;
-} | null> {
+} | null> => {
   const split = await getActiveSplit();
   if (!split) return null;
   const schedule = parseSchedule(split.schedule);
@@ -192,4 +192,4 @@ export async function getTodayInfo(): Promise<{
     .limit(1);
 
   return { dayName, isRestDay: isRestDayRow(rows[0]), schedule };
-}
+};

@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
-import type { OnboardingSlide } from "../slides";
+import type { OnboardingSlide } from "@/features/onboarding/slides";
 
 interface OnboardingSlideViewProps {
   slide: OnboardingSlide;

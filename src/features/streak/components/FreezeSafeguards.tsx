@@ -2,9 +2,12 @@ import { Snowflake } from "lucide-react-native";
 import { useState } from "react";
 import { Alert } from "react-native";
 import { ActionButton } from "@/components/shared/ActionButton";
+import {
+  missedDayAfter,
+  spendFreeze,
+} from "@/features/streak/services/freeze-day";
 import { parseDayKey } from "@/lib/utils";
 import { useStreakStore } from "@/stores/use-streak-store";
-import { missedDayAfter, spendFreeze } from "../services/freeze-day";
 
 const formatDay = (dayKey: string): string =>
   parseDayKey(dayKey).toLocaleDateString(undefined, {

@@ -1,8 +1,8 @@
 import { View } from "react-native";
 import { Text } from "@/components/ui/text";
 import type { TodayExercise } from "@/db/today";
+import { groupBySuperset } from "@/features/workout/services/superset-groups";
 import { cn } from "@/lib/utils";
-import { groupBySuperset } from "../services/superset-groups";
 
 interface ExerciseGroupListProps {
   exercises: TodayExercise[];
