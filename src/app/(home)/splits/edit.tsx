@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, ScrollView, View } from "react-native";
 import { useUniwind } from "uniwind";
 import { Text } from "@/components/ui/text";
-import { createSplit, deleteSplit, updateSplit } from "@/db/splits";
+import { deleteSplit, updateSplit } from "@/db/split-updates";
+import { createSplit } from "@/db/splits";
 import { SplitEditor } from "@/features/splits/components/SplitEditor";
 import {
   loadSplitDraft,

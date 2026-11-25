@@ -1,5 +1,5 @@
 import { addDays, startOfDay } from "date-fns";
-import { toDayKey } from "@/lib/utils";
+import { toDayKey } from "@/lib/day-key";
 import type { DayDot } from "./streak-types";
 
 export const last7DayDots = (

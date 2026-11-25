@@ -3,11 +3,8 @@ import { devtools } from "zustand/middleware";
 
 import type { WorkoutStore } from "./workout-store";
 import type { WorkoutSnapshot } from "./workout-store-draft";
-import {
-  applyCompleteSet,
-  applyLogSet,
-  buildFinishResult,
-} from "./workout-store-draft";
+import { applyCompleteSet, applyLogSet } from "./workout-store-draft";
+import { buildFinishResult } from "./workout-store-finish";
 
 export const useWorkoutStore = create<WorkoutStore>()(
   devtools(

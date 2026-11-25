@@ -1,40 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import type { WorkoutExercise, WorkoutSet } from "@/shared/types/workout-types";
-import {
-  applyCompleteSet,
-  applyLogSet,
-  buildFinishResult,
-  type WorkoutSnapshot,
-} from "./workout-store-draft";
-
-const makeExercise = (
-  exerciseId: string,
-  sets: WorkoutSet[] = [],
-  restSeconds = 90,
-): WorkoutExercise => ({
-  exerciseId,
-  name: "Bench Press",
-  muscleGroup: "chest",
-  equipment: "barbell",
-  targetSets: 4,
-  targetReps: "8-10",
-  restSeconds,
-  notes: "",
-  sets,
-});
-
-const snapshot = (exercises: WorkoutExercise[]): WorkoutSnapshot => ({
-  exercises,
-  prBest: {},
-  restTimerEndsAt: null,
-  totalVolume: 0,
-  completedSets: 0,
-});
+import { applyCompleteSet, applyLogSet } from "./workout-store-draft";
+import { makeExercise, makeSnapshot } from "./workout-test-fixtures";
 
 describe("workout-store-draft", () => {
   test("applyLogSet returns null when exerciseId is missing", () => {
     const result = applyLogSet(
-      snapshot([]),
+      makeSnapshot([]),
       "missing",
       1,
       100,
@@ -156,55 +128,13 @@ describe("workout-store-draft", () => {
         },
       ]),
     ];
-    const result = applyCompleteSet(snapshot(exercises), "ex1", 1);
+    const result = applyCompleteSet(makeSnapshot(exercises), "ex1", 1);
     expect(result).not.toBeNull();
     expect(result?.exercises[0].sets[0].completed).toBe(true);
     expect(result?.exercises[0].sets[0].completedAt).not.toBeNull();
   });
 
   test("applyCompleteSet returns null for missing exerciseId", () => {
-    expect(applyCompleteSet(snapshot([]), "missing", 1)).toBeNull();
-  });
-
-  test("buildFinishResult computes durationSeconds and prCount", () => {
-    const exercises: WorkoutExercise[] = [
-      makeExercise("ex1", [
-        {
-          setNumber: 1,
-          weight: 100,
-          reps: 10,
-          rpe: null,
-          completed: true,
-          completedAt: Date.now(),
-          isPR: true,
-        },
-        {
-          setNumber: 2,
-          weight: 100,
-          reps: 10,
-          rpe: null,
-          completed: true,
-          completedAt: Date.now(),
-          isPR: false,
-        },
-      ]),
-    ];
-    const result = buildFinishResult(
-      {
-        exercises,
-        prBest: {},
-        restTimerEndsAt: null,
-        totalVolume: 2000,
-        completedSets: 2,
-      },
-      Date.now() - 60_000,
-    );
-    expect(result.durationSeconds).toBeGreaterThanOrEqual(59);
-    expect(result.durationSeconds).toBeLessThanOrEqual(61);
-    expect(result.prCount).toBe(1);
-    expect(result.totalVolume).toBe(2000);
-    expect(result.completedSets).toBe(2);
-    expect(result.setLogs.length).toBe(2);
-    expect(result.setLogs[0].setNumber).toBe(1);
+    expect(applyCompleteSet(makeSnapshot([]), "missing", 1)).toBeNull();
   });
 });

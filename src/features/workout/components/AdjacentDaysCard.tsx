@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
-import type { AdjacentDays } from "@/db/split-days";
+import type { AdjacentDays } from "@/db/adjacent-days";
 
 interface AdjacentDaysCardProps {
   adjacent: AdjacentDays;

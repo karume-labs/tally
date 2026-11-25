@@ -1,6 +1,6 @@
 import { loadRecentHistory } from "@/db/streak-history";
 import { getActiveSplit, parseSchedule, weekdayKeyFor } from "@/db/today";
-import { parseDayKey } from "@/lib/utils";
+import { parseDayKey } from "@/lib/day-key";
 import { last7DayDots } from "./day-dots";
 import { writeLast7Dots } from "./widgetSync";
 

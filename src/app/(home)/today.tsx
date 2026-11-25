@@ -5,17 +5,16 @@ import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useUniwind } from "uniwind";
 import { ActionButton } from "@/components/shared/ActionButton";
 import { SectionCard } from "@/components/shared/SectionCard";
-import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
-import { type AdjacentDays, getAdjacentDays } from "@/db/split-days";
+import { type AdjacentDays, getAdjacentDays } from "@/db/adjacent-days";
 import {
   getTodayExercises,
   getTodayInfo,
   type TodayExercise,
 } from "@/db/today";
 import { AdjacentDaysCard } from "@/features/workout/components/AdjacentDaysCard";
-import { ExerciseGroupList } from "@/features/workout/components/ExerciseGroupList";
 import { StartRoutineButton } from "@/features/workout/components/StartRoutineButton";
+import { TodayPlanCard } from "@/features/workout/components/TodayPlanCard";
 import { schemeFromTheme, TALLY_THEME } from "@/lib/theme";
 import { useSettingsStore } from "@/stores/use-settings-store";
 
@@ -112,39 +111,11 @@ export default function TodayScreen() {
         </>
       ) : (
         <>
-          <SectionCard>
-            <View className="flex-row items-center justify-between">
-              <View className="flex-1 gap-1">
-                <Text className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
-                  Today
-                </Text>
-                <View className="flex-row items-center gap-2">
-                  <Icon as={Dumbbell} className="text-primary" size={22} />
-                  <Text className="text-2xl font-black tracking-tight">
-                    {info?.dayName}
-                  </Text>
-                </View>
-              </View>
-              <View className="items-center rounded-xl bg-secondary px-3 py-2">
-                <Text className="text-lg font-black tabular-nums">
-                  {totalSets}
-                </Text>
-                <Text className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
-                  sets
-                </Text>
-              </View>
-            </View>
-          </SectionCard>
-
-          <SectionCard title="Exercises">
-            {exercises.length === 0 ? (
-              <Text className="text-sm text-muted-foreground">
-                This day has no exercises yet.
-              </Text>
-            ) : (
-              <ExerciseGroupList exercises={exercises} />
-            )}
-          </SectionCard>
+          <TodayPlanCard
+            dayName={info?.dayName ?? null}
+            totalSets={totalSets}
+            exercises={exercises}
+          />
 
           <ActionButton
             size="lg"

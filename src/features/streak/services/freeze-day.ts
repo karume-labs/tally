@@ -2,7 +2,7 @@ import { addDays } from "date-fns";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import * as schema from "@/db/schema";
-import { parseDayKey, toDayKey } from "@/lib/utils";
+import { parseDayKey, toDayKey } from "@/lib/day-key";
 import { syncStreakWidgetDots } from "@/services/sync-widget-dots";
 import { type StreakRow, useStreakStore } from "@/stores/use-streak-store";
 

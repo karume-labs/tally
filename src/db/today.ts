@@ -1,22 +1,16 @@
 import { getDay, startOfDay } from "date-fns";
 import { and, eq } from "drizzle-orm";
 import { getDb } from "./client";
+import {
+  getExercisesForDay,
+  loadDayExercises,
+  type TodayExercise,
+} from "./day-exercises";
 import * as schema from "./schema";
 
-const WEEKDAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
+export type { TodayExercise };
 
-export interface TodayExercise {
-  id: string;
-  name: string;
-  muscleGroup: string;
-  equipment: string | null;
-  targetSets: number | null;
-  targetReps: string | null;
-  restSeconds: number;
-  notes: string;
-  order: number;
-  supersetGroup: string | null;
-}
+const WEEKDAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
 
 /** Returns the currently-active split, or null. */
 export const getActiveSplit = async () => {
@@ -62,63 +56,6 @@ export const todaySplitDayName = (
   return schedule[key] ?? null;
 };
 
-/** Returns a split day's ordered exercise list by split id + day name, or [] when the day has no rows. */
-export const getExercisesForDay = async (
-  splitId: string,
-  dayName: string,
-): Promise<TodayExercise[]> => {
-  const db = getDb();
-  const days = await db
-    .select()
-    .from(schema.splitDays)
-    .where(
-      and(
-        eq(schema.splitDays.splitId, splitId),
-        eq(schema.splitDays.name, dayName),
-      ),
-    )
-    .limit(1);
-
-  if (days.length === 0) return [];
-  const splitDay = days[0];
-
-  const sdeRows = await db
-    .select()
-    .from(schema.splitDayExercises)
-    .where(eq(schema.splitDayExercises.splitDayId, splitDay.id))
-    .orderBy(schema.splitDayExercises.order);
-  if (sdeRows.length === 0) return [];
-
-  // Fetch each exercise by id. For a small list this is fine; we could batch
-  // with `inArray` later if needed.
-  const exercises: TodayExercise[] = [];
-  for (const sde of sdeRows) {
-    const exRows = await db
-      .select()
-      .from(schema.exercises)
-      .where(eq(schema.exercises.id, sde.exerciseId))
-      .limit(1);
-    const ex = exRows[0];
-    if (!ex) continue;
-    exercises.push({
-      id: ex.id,
-      name: ex.name,
-      muscleGroup: ex.muscleGroup,
-      equipment: ex.equipment,
-      targetSets: sde.targetSets,
-      targetReps: sde.targetReps,
-      restSeconds: sde.restSeconds ?? 90,
-      notes: sde.notes ?? "",
-      order: sde.order ?? 0,
-      supersetGroup: sde.supersetGroup,
-    });
-  }
-
-  return exercises.sort(
-    (a: TodayExercise, b: TodayExercise) => a.order - b.order,
-  );
-};
-
 /** Returns today's ordered exercise list for the active split, or null if no active split / no today. */
 export const getTodayExercises = async (): Promise<TodayExercise[] | null> => {
   const split = await getActiveSplit();
@@ -145,8 +82,7 @@ export const getTodaySplitDay = async (): Promise<{
   const dayName = todaySplitDayName(parseSchedule(split.schedule));
   if (!dayName) return null;
 
-  const db = getDb();
-  const rows = await db
+  const rows = await getDb()
     .select()
     .from(schema.splitDays)
     .where(
@@ -193,3 +129,6 @@ export const getTodayInfo = async (): Promise<{
 
   return { dayName, isRestDay: isRestDayRow(rows[0]), schedule };
 };
+
+/** A split day's exercises, for callers that already hold its row id. */
+export const getSplitDayExercises = loadDayExercises;

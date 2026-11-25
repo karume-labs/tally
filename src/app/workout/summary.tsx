@@ -1,91 +1,23 @@
-import { desc, eq, isNotNull } from "drizzle-orm";
 import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useUniwind } from "uniwind";
 import { ActionButton } from "@/components/shared/ActionButton";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { StatTile } from "@/components/shared/StatTile";
 import { Text } from "@/components/ui/text";
-import { getDb } from "@/db/client";
-import * as schema from "@/db/schema";
+import {
+  type SummaryLog,
+  useLastSession,
+} from "@/features/workout/hooks/use-last-session";
 import { schemeFromTheme, TALLY_THEME } from "@/lib/theme";
 import { formatDuration, formatVolume } from "@/lib/utils";
-
-interface SummaryLog {
-  exerciseId: string;
-  setNumber: number;
-  weight: number | null;
-  reps: number | null;
-  isPR: boolean | null;
-}
 
 export default function WorkoutSummaryScreen() {
   const router = useRouter();
   const scheme = schemeFromTheme(useUniwind().theme);
   const colors = TALLY_THEME[scheme];
-  const [session, setSession] = useState<{
-    id: string;
-    splitDayName: string | null;
-    durationSeconds: number | null;
-    totalVolume: number | null;
-    prCount: number | null;
-  } | null>(null);
-  const [logs, setLogs] = useState<SummaryLog[]>([]);
-  const [names, setNames] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const db = getDb();
-      const sessionRows = await db
-        .select({
-          id: schema.sessions.id,
-          splitDayName: schema.sessions.splitDayName,
-          durationSeconds: schema.sessions.durationSeconds,
-          totalVolume: schema.sessions.totalVolume,
-          prCount: schema.sessions.prCount,
-        })
-        .from(schema.sessions)
-        .where(isNotNull(schema.sessions.endedAt))
-        .orderBy(desc(schema.sessions.startedAt))
-        .limit(1);
-
-      const latest = sessionRows[0] ?? null;
-      const logRows =
-        latest == null
-          ? []
-          : await db
-              .select({
-                exerciseId: schema.setLogs.exerciseId,
-                setNumber: schema.setLogs.setNumber,
-                weight: schema.setLogs.weight,
-                reps: schema.setLogs.reps,
-                isPR: schema.setLogs.isPR,
-              })
-              .from(schema.setLogs)
-              .where(eq(schema.setLogs.sessionId, latest.id))
-              .orderBy(schema.setLogs.completedAt);
-
-      const exerciseRows = await db
-        .select({ id: schema.exercises.id, name: schema.exercises.name })
-        .from(schema.exercises);
-      const nameMap: Record<string, string> = {};
-      for (const row of exerciseRows) {
-        nameMap[row.id] = row.name;
-      }
-
-      if (cancelled) return;
-      setSession(latest);
-      setLogs(logRows);
-      setNames(nameMap);
-      setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { session, logs, names, loading } = useLastSession();
 
   const grouped = useMemo(() => {
     const map = new Map<string, SummaryLog[]>();

@@ -1,4 +1,4 @@
-import { getAdjacentDays } from "@/db/split-days";
+import { getAdjacentDays } from "@/db/adjacent-days";
 import { getTodayExercises, getTodayInfo } from "@/db/today";
 import { useSettingsStore } from "@/stores/use-settings-store";
 import { writeTodayWidgetData } from "./widgetSync";

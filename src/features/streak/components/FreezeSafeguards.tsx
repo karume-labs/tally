@@ -6,7 +6,7 @@ import {
   missedDayAfter,
   spendFreeze,
 } from "@/features/streak/services/freeze-day";
-import { parseDayKey } from "@/lib/utils";
+import { parseDayKey } from "@/lib/day-key";
 import { useStreakStore } from "@/stores/use-streak-store";
 
 const formatDay = (dayKey: string): string =>

@@ -1,6 +1,6 @@
 import { addDays, startOfDay } from "date-fns";
 import { gte } from "drizzle-orm";
-import { toDayKey } from "@/lib/utils";
+import { toDayKey } from "@/lib/day-key";
 import { getDb } from "./client";
 import * as schema from "./schema";
 

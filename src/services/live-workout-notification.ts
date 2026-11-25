@@ -1,0 +1,144 @@
+import { Platform } from "react-native";
+import notifee, {
+  type AndroidAction,
+  AndroidForegroundServiceType,
+  AndroidImportance,
+} from "react-native-notify-kit";
+import {
+  FINISH_WORKOUT_ACTION,
+  SKIP_REST_ACTION,
+} from "./live-workout-actions";
+
+const CHANNEL_ID = "live-workout";
+const NOTIFICATION_ID = "live-workout";
+const SMALL_ICON = "ic_stat_tally";
+const ACCENT = "#ffd340";
+
+export const isLiveWorkoutSupported = Platform.OS === "android";
+
+export interface LiveWorkoutState {
+  /** Session start, used as the chronometer base while training. */
+  startedAt: number;
+  dayName: string;
+  /** The exercise card that is open, which is what the title shows. */
+  exerciseName: string | null;
+  completedSets: number;
+  totalSets: number;
+  nextName: string | null;
+  /** Set while resting; the chronometer counts down to it. */
+  restEndsAt: number | null;
+}
+
+let channelReady = false;
+
+// Android is the only platform with a persistent, live surface for this. iOS
+// has no ongoing notification: a posted notification is static, and the Lock
+// Screen / Dynamic Island version is an ActivityKit Live Activity, which needs
+// a widget extension in the native project (SDK 56+ exposes that through
+// expo-widgets' createLiveActivity). Every call below is therefore a no-op on
+// iOS until that target exists, rather than pretending to show something.
+if (isLiveWorkoutSupported) {
+  // The service needs a runner before a notification can hold it. It never
+  // settles on purpose: endLiveWorkout stops the service instead.
+  notifee.registerForegroundService(
+    () =>
+      new Promise<void>(() => {
+        // Deliberately unresolved.
+      }),
+  );
+}
+
+const ensureChannel = async () => {
+  if (channelReady) return;
+  await notifee.createChannel({
+    id: CHANNEL_ID,
+    name: "Live workout",
+    // Every logged set republishes the notification; it must stay silent.
+    importance: AndroidImportance.LOW,
+    vibration: false,
+  });
+  channelReady = true;
+};
+
+const isResting = (current: LiveWorkoutState): boolean =>
+  current.restEndsAt != null && current.restEndsAt > Date.now();
+
+// Actions carry no launchActivity, so tapping one stays in the shade: notifee
+// only starts its invisible receiver activity for these.
+const actionsFor = (current: LiveWorkoutState): AndroidAction[] => {
+  const actions: AndroidAction[] = [];
+  if (isResting(current)) {
+    actions.push({
+      title: "Skip rest",
+      pressAction: { id: SKIP_REST_ACTION },
+    });
+  }
+  // Finishing an empty session would file a workout with nothing in it; that is
+  // the same session the abandon guard throws away.
+  if (current.completedSets > 0) {
+    actions.push({
+      title: "Finish",
+      pressAction: { id: FINISH_WORKOUT_ACTION },
+    });
+  }
+  return actions;
+};
+
+const bodyFor = (current: LiveWorkoutState): string => {
+  const progress = `${current.completedSets} of ${current.totalSets} sets`;
+  if (isResting(current)) {
+    return current.nextName == null
+      ? `Resting · ${progress}`
+      : `Resting · ${current.nextName} up next`;
+  }
+  if (current.nextName == null) return `${progress} · all sets logged`;
+  return `${progress} · ${current.nextName} up next`;
+};
+
+export const showLiveWorkoutNotification = async (
+  current: LiveWorkoutState,
+) => {
+  await ensureChannel();
+  const max = Math.max(current.totalSets, 1);
+  const resting = isResting(current);
+  const actions = actionsFor(current);
+  await notifee.displayNotification({
+    id: NOTIFICATION_ID,
+    title: current.exerciseName ?? current.dayName,
+    body: bodyFor(current),
+    android: {
+      channelId: CHANNEL_ID,
+      // Has to be repeated on every update, or the service stops.
+      asForegroundService: true,
+      foregroundServiceTypes: [
+        AndroidForegroundServiceType.FOREGROUND_SERVICE_TYPE_HEALTH,
+      ],
+      ongoing: true,
+      // The Android 16 Live Update opt-in is not exposed by the library; the
+      // config plugin patches it in for foreground-service notifications only.
+      onlyAlertOnce: true,
+      smallIcon: SMALL_ICON,
+      color: ACCENT,
+      // One chronometer can only do one job: while resting it counts the rest
+      // down, otherwise it counts the session up. Android renders both itself,
+      // so they keep ticking when the app is backgrounded.
+      showChronometer: true,
+      chronometerDirection: resting ? "down" : "up",
+      timestamp: resting
+        ? (current.restEndsAt ?? current.startedAt)
+        : current.startedAt,
+      showTimestamp: false,
+      progress: {
+        max,
+        current: Math.min(current.completedSets, max),
+        indeterminate: current.totalSets === 0,
+      },
+      pressAction: { id: "default", launchActivity: "default" },
+      actions: actions.length > 0 ? actions : undefined,
+    },
+  });
+};
+
+export const stopLiveWorkoutNotification = async () => {
+  await notifee.stopForegroundService();
+};

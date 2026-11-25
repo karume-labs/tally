@@ -115,24 +115,28 @@ const main = (): void => {
     warnings.push(...result.warnings);
   }
 
-  if (violations.length === 0) {
+  // File length is reported by default but only fails under --strict. The repo
+  // is clean against the cap now, so strict mode treats a new oversized file as
+  // a regression instead of long-standing debt.
+  const failed = violations.length > 0 || (strict && warnings.length > 0);
+
+  if (!failed) {
     console.log(`Guardrails OK — ${files.length} files checked.`);
-  } else {
+  }
+
+  if (violations.length > 0) {
     print("error", violations);
     console.log(
       `\n${violations.length} violation(s) across ${files.length} files checked.`,
     );
   }
 
-  // File length is reported but does not fail: the repo still has files over
-  // the cap, and blocking every commit on debt that predates the checker is how
-  // a checker gets deleted.
   if (warnings.length > 0) {
     console.log("");
-    print("warn ", warnings);
+    print(strict ? "error" : "warn ", warnings);
   }
 
-  if (strict && violations.length > 0) process.exit(1);
+  if (failed && strict) process.exit(1);
 };
 
 main();
