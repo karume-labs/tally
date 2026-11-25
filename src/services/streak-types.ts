@@ -1,22 +1,5 @@
 import type { StreakMilestone } from "@/lib/constants";
 
-export interface ActiveSplitSchedule {
-  mon?: string;
-  tue?: string;
-  wed?: string;
-  thu?: string;
-  fri?: string;
-  sat?: string;
-  sun?: string;
-}
-
-export interface TodayResult {
-  dayKey: string;
-  status: "workout" | "rest" | "no-split";
-  splitDayName: string | null;
-  isRestDay: boolean;
-}
-
 export interface StreakCalcResult {
   newCurrentStreak: number;
   newLongestStreak: number;
