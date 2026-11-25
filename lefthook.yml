@@ -6,3 +6,8 @@ pre-commit:
       stage_fixed: true
     typecheck:
       run: bun typecheck
+    # Repo-wide, not staged-files: these rules are invariants (arrow functions,
+    # @/ imports, no unsafe casts), so a commit that only touches one file must
+    # not slip past a violation added elsewhere on the branch.
+    guardrails:
+      run: bun run guardrails:strict
