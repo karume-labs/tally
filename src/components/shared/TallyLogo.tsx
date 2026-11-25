@@ -12,7 +12,7 @@ export const TallyLogo = ({ size = 40, className }: TallyLogoProps) => (
   <Image
     accessibilityIgnoresInvertColors
     accessibilityLabel="Tally"
-    source={require("../../assets/images/icon.png")}
+    source={require("../../../assets/images/icon.png")}
     style={{
       width: size,
       height: size,
