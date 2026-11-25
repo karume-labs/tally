@@ -38,7 +38,7 @@ export interface WorkoutStore {
     rpe: number | null,
     completedAt: number,
   ) => WorkoutSet | null;
-  completeSet: (exerciseId: string, setNumber: number) => void;
+  toggleSetCompleted: (exerciseId: string, setNumber: number) => void;
   skipRest: () => void;
   setRestTimer: (endsAt: number | null) => void;
   updateNotes: (notes: string) => void;

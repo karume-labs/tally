@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { saveSetLog } from "@/features/workout/services/set-log-writes";
 import { useWorkoutStore } from "@/stores/use-workout-store";
 
 export interface SetInputs {
@@ -36,6 +37,7 @@ export const useSetInputs = (activeExerciseId: string | null): SetInputs => {
   const logSet = () => {
     if (activeExerciseId == null) return;
     const state = useWorkoutStore.getState();
+    if (state.sessionId == null) return;
     const exercise = state.exercises.find(
       (row) => row.exerciseId === activeExerciseId,
     );
@@ -61,6 +63,13 @@ export const useSetInputs = (activeExerciseId: string | null): SetInputs => {
       Date.now(),
     );
     if (logged == null) return;
+    // Written now, not at finish: a session killed mid-workout must still have
+    // this set on record for the boot cleanup to close.
+    saveSetLog({
+      sessionId: state.sessionId,
+      exerciseId: exercise.exerciseId,
+      set: logged,
+    });
     // Weight and reps stay put for the next set: repeating the same numbers is
     // the common case, and hands-free mode should not need a retype.
     setRpe("");

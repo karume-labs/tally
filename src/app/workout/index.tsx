@@ -16,6 +16,7 @@ import { useLiveWorkoutNotification } from "@/features/workout/hooks/use-live-wo
 import { useRestTimer } from "@/features/workout/hooks/use-rest-timer";
 import { useSessionExit } from "@/features/workout/hooks/use-session-exit";
 import { useSetInputs } from "@/features/workout/hooks/use-set-inputs";
+import { useSetToggle } from "@/features/workout/hooks/use-set-toggle";
 import { useWorkoutPlan } from "@/features/workout/hooks/use-workout-plan";
 import { isSessionComplete } from "@/features/workout/services/next-exercise";
 import { registerLiveWorkoutHandlers } from "@/services/live-workout-actions";
@@ -46,6 +47,7 @@ export default function WorkoutScreen() {
   });
   const { dayName, isRest } = useWorkoutPlan(dayId, announce);
   const inputs = useSetInputs(activeExerciseId);
+  const toggleSet = useSetToggle();
   const { skipRest, nextName } = useRestTimer({
     exercises: store.exercises,
     activeExercise,
@@ -112,6 +114,7 @@ export default function WorkoutScreen() {
               activeExerciseId={activeExerciseId}
               inputs={inputs}
               onToggleActive={toggleActive}
+              onToggleSet={toggleSet}
             />
 
             {allDone && autoAdvance && <SessionCompleteBanner />}

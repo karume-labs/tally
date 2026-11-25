@@ -17,6 +17,7 @@ interface WorkoutExerciseCardProps {
   onRpeChange: (value: string) => void;
   onLogSet: () => void;
   onToggleActive: () => void;
+  onToggleSet: (setNumber: number) => void;
 }
 
 export const WorkoutExerciseCard = ({
@@ -30,6 +31,7 @@ export const WorkoutExerciseCard = ({
   onRpeChange,
   onLogSet,
   onToggleActive,
+  onToggleSet,
 }: WorkoutExerciseCardProps) => {
   const prCount = exercise.sets.filter((set) => set.isPR).length;
 
@@ -69,7 +71,11 @@ export const WorkoutExerciseCard = ({
           </Text>
         ) : (
           exercise.sets.map((set) => (
-            <WorkoutSetRow key={set.setNumber} set={set} />
+            <WorkoutSetRow
+              key={set.setNumber}
+              set={set}
+              onToggle={() => onToggleSet(set.setNumber)}
+            />
           ))
         )}
       </View>

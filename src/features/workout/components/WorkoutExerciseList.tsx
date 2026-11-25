@@ -7,6 +7,7 @@ interface WorkoutExerciseListProps {
   activeExerciseId: string | null;
   inputs: SetInputs;
   onToggleActive: (exerciseId: string) => void;
+  onToggleSet: (exerciseId: string, setNumber: number) => void;
 }
 
 /**
@@ -18,6 +19,7 @@ export const WorkoutExerciseList = ({
   activeExerciseId,
   inputs,
   onToggleActive,
+  onToggleSet,
 }: WorkoutExerciseListProps) => (
   <>
     {exercises.map((exercise) => {
@@ -35,6 +37,9 @@ export const WorkoutExerciseList = ({
           onRpeChange={inputs.setRpe}
           onLogSet={inputs.logSet}
           onToggleActive={() => onToggleActive(exercise.exerciseId)}
+          onToggleSet={(setNumber) =>
+            onToggleSet(exercise.exerciseId, setNumber)
+          }
         />
       );
     })}

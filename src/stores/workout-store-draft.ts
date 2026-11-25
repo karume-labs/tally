@@ -88,7 +88,7 @@ export const applyLogSet = (
   };
 };
 
-export const applyCompleteSet = (
+export const applyToggleSet = (
   snapshot: WorkoutSnapshot,
   exerciseId: string,
   setNumber: number,
@@ -100,8 +100,11 @@ export const applyCompleteSet = (
 } | null => {
   const exercise = snapshot.exercises.find((e) => e.exerciseId === exerciseId);
   if (!exercise) return null;
+  const target = exercise.sets.find((s) => s.setNumber === setNumber);
+  if (target == null) return null;
 
   const now = Date.now();
+  const completed = !target.completed;
   const exercises = snapshot.exercises.map((e) =>
     e.exerciseId === exerciseId
       ? {
@@ -110,9 +113,10 @@ export const applyCompleteSet = (
             s.setNumber === setNumber
               ? {
                   ...s,
-                  completed: true,
-                  completedAt: now,
-                  isPR: s.isPR,
+                  completed,
+                  completedAt: completed ? now : null,
+                  // A set that no longer counts cannot keep its PR badge.
+                  isPR: completed ? s.isPR : false,
                 }
               : s,
           ),
@@ -122,8 +126,12 @@ export const applyCompleteSet = (
 
   const { totalVolume, completedSets } = recomputeTotals(exercises);
 
+  // Undoing a set also ends the rest it started; leaving the timer running would
+  // count down against a set that no longer counts.
   const restTimerEndsAt =
-    exercise.restSeconds > 0 ? now + exercise.restSeconds * 1000 : null;
+    completed && exercise.restSeconds > 0
+      ? now + exercise.restSeconds * 1000
+      : null;
 
   return { exercises, restTimerEndsAt, totalVolume, completedSets };
 };

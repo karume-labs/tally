@@ -3,7 +3,7 @@ import { devtools } from "zustand/middleware";
 
 import type { WorkoutStore } from "./workout-store";
 import type { WorkoutSnapshot } from "./workout-store-draft";
-import { applyCompleteSet, applyLogSet } from "./workout-store-draft";
+import { applyLogSet, applyToggleSet } from "./workout-store-draft";
 import { buildFinishResult } from "./workout-store-finish";
 
 export const useWorkoutStore = create<WorkoutStore>()(
@@ -77,8 +77,8 @@ export const useWorkoutStore = create<WorkoutStore>()(
           return applied.newSet;
         },
 
-        completeSet: (exerciseId, setNumber) => {
-          const applied = applyCompleteSet(
+        toggleSetCompleted: (exerciseId, setNumber) => {
+          const applied = applyToggleSet(
             get() as WorkoutSnapshot,
             exerciseId,
             setNumber,

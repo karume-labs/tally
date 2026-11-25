@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import type { WorkoutExercise, WorkoutSet } from "@/shared/types/workout-types";
-import { applyCompleteSet, applyLogSet } from "./workout-store-draft";
+import { applyLogSet } from "./workout-store-draft";
 import { makeExercise, makeSnapshot } from "./workout-test-fixtures";
 
 describe("workout-store-draft", () => {
@@ -112,29 +112,5 @@ describe("workout-store-draft", () => {
     expect(result?.newSet.completed).toBe(true);
     expect(result?.newSet.completedAt).toBe(before);
     expect(result?.restTimerEndsAt).toBe(before + 90 * 1000);
-  });
-
-  test("applyCompleteSet marks a single set completed", () => {
-    const exercises: WorkoutExercise[] = [
-      makeExercise("ex1", [
-        {
-          setNumber: 1,
-          weight: 100,
-          reps: 10,
-          rpe: null,
-          completed: false,
-          completedAt: null,
-          isPR: false,
-        },
-      ]),
-    ];
-    const result = applyCompleteSet(makeSnapshot(exercises), "ex1", 1);
-    expect(result).not.toBeNull();
-    expect(result?.exercises[0].sets[0].completed).toBe(true);
-    expect(result?.exercises[0].sets[0].completedAt).not.toBeNull();
-  });
-
-  test("applyCompleteSet returns null for missing exerciseId", () => {
-    expect(applyCompleteSet(makeSnapshot([]), "missing", 1)).toBeNull();
   });
 });

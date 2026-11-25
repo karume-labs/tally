@@ -2,6 +2,10 @@ import { eq } from "drizzle-orm";
 import { useCallback, useMemo } from "react";
 import { getDb } from "@/db/client";
 import * as schema from "@/db/schema";
+import {
+  deleteSessionSetLogs,
+  saveSessionSetLogs,
+} from "@/features/workout/services/set-log-writes";
 import { createId } from "@/lib/utils";
 import type { WorkoutExercise } from "@/shared/types/workout-types";
 import { useWorkoutStore } from "@/stores/use-workout-store";
@@ -54,24 +58,9 @@ export const useWorkoutSession = () => {
         .where(eq(schema.sessions.id, sessionId))
         .run();
 
-      for (const exercise of state.exercises) {
-        for (const set of exercise.sets) {
-          if (!set.completed || set.completedAt == null) continue;
-          db.insert(schema.setLogs)
-            .values({
-              id: createId(),
-              sessionId,
-              exerciseId: exercise.exerciseId,
-              setNumber: set.setNumber,
-              weight: set.weight,
-              reps: set.reps,
-              rpe: set.rpe,
-              isPR: set.isPR,
-              completedAt: new Date(set.completedAt),
-            })
-            .run();
-        }
-      }
+      // Most rows were written as the sets were logged; this rewrite is the
+      // catch-up for any that were not, and an upsert on the same ids.
+      saveSessionSetLogs(sessionId, state.exercises);
     }
 
     state.reset();
@@ -81,6 +70,8 @@ export const useWorkoutSession = () => {
   const cancelSession = useCallback(() => {
     const state = useWorkoutStore.getState();
     if (state.sessionId != null) {
+      // Foreign keys are not guaranteed on, so the set rows go explicitly.
+      deleteSessionSetLogs(state.sessionId);
       getDb()
         .delete(schema.sessions)
         .where(eq(schema.sessions.id, state.sessionId))

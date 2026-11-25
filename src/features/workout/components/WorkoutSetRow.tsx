@@ -1,5 +1,5 @@
 import { Check } from "lucide-react-native";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/utils";
@@ -7,9 +7,10 @@ import type { WorkoutSet } from "@/shared/types/workout-types";
 
 interface WorkoutSetRowProps {
   set: WorkoutSet;
+  onToggle?: () => void;
 }
 
-export const WorkoutSetRow = ({ set }: WorkoutSetRowProps) => {
+export const WorkoutSetRow = ({ set, onToggle }: WorkoutSetRowProps) => {
   const weight = set.weight != null ? `${set.weight} kg` : "—";
   const reps = set.reps != null ? `${set.reps}` : "—";
   const rpe = set.rpe != null ? ` @ ${set.rpe}` : "";
@@ -29,13 +30,36 @@ export const WorkoutSetRow = ({ set }: WorkoutSetRowProps) => {
             PR
           </Text>
         )}
-        <Icon
-          as={Check}
-          size={16}
-          className={cn(
-            set.completed ? "text-success" : "text-muted-foreground",
-          )}
-        />
+        {onToggle == null ? (
+          <Icon
+            as={Check}
+            size={16}
+            className={cn(
+              set.completed ? "text-success" : "text-muted-foreground",
+            )}
+          />
+        ) : (
+          // Tapping the check undoes the set, so a mistyped set can be taken
+          // back without abandoning the session.
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              set.completed
+                ? `Undo set ${set.setNumber}`
+                : `Complete set ${set.setNumber}`
+            }
+            hitSlop={8}
+            onPress={onToggle}
+          >
+            <Icon
+              as={Check}
+              size={16}
+              className={cn(
+                set.completed ? "text-success" : "text-muted-foreground",
+              )}
+            />
+          </Pressable>
+        )}
       </View>
     </View>
   );
