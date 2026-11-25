@@ -1,6 +1,11 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { WorkoutExercise } from "@/shared/types/workout-types";
-import { pickNextExercise } from "../services/next-exercise";
+import { completedSets, pickNextExercise } from "../services/next-exercise";
+
+/** A zero-rest completion gets a beat so the logged set stays visible. */
+const ZERO_REST_BEAT_MS = 1500;
+/** Timers can fire a hair early, so wait past the deadline before acting. */
+const REST_GRACE_MS = 100;
 
 interface UseAutoAdvanceArgs {
   enabled: boolean;
@@ -31,34 +36,75 @@ export const useAutoAdvance = ({
     if (next != null) onAdvance(next.exerciseId);
   }, [exercises, activeExerciseId, onAdvance]);
 
+  // Read through a ref so the rest timeout is armed once per rest. Depending on
+  // `advance` directly re-armed it on every logged set and always against the
+  // exercises captured when it was armed; the ref advances from current state.
+  const advanceRef = useRef(advance);
   useEffect(() => {
-    if (restTimerEndsAt == null) return;
-    const remaining = restTimerEndsAt - Date.now();
-    const timer = setTimeout(() => {
-      onRestEnd();
-      if (enabled) advance();
-    }, Math.max(0, remaining) + 100);
-    return () => clearTimeout(timer);
-  }, [restTimerEndsAt, enabled, advance, onRestEnd]);
+    advanceRef.current = advance;
+  }, [advance]);
 
   useEffect(() => {
-    if (!enabled) return;
-    // A zero-rest exercise never starts a timer, so completion is the only cue
-    // that it is time to move on.
-    if (restTimerEndsAt != null) return;
+    if (restTimerEndsAt == null) return;
+    const timer = setTimeout(
+      () => {
+        onRestEnd();
+        if (enabled) advanceRef.current();
+      },
+      Math.max(0, restTimerEndsAt - Date.now()) + REST_GRACE_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [restTimerEndsAt, enabled, onRestEnd]);
+
+  // A zero-rest exercise never arms a rest, so its completion is the only cue
+  // to move on. The completed-count check matters: without it, re-opening an
+  // exercise that was already finished hopped away from it a beat later, and
+  // any unrelated store write restarted the beat.
+  const completion = useRef<{ exerciseId: string | null; completed: number }>({
+    exerciseId: null,
+    completed: 0,
+  });
+
+  useEffect(() => {
+    const previous = completion.current;
     const current = exercises.find(
       (exercise) => exercise.exerciseId === activeExerciseId,
     );
-    if (current == null) return;
-    const done = pickNextExercise(exercises, activeExerciseId);
-    if (done == null || done.exerciseId === activeExerciseId) return;
-    const timer = setTimeout(advance, 1500);
+    const completed = current == null ? 0 : completedSets(current);
+    completion.current = { exerciseId: activeExerciseId, completed };
+
+    if (!enabled || restTimerEndsAt != null) return;
+    const justFinished =
+      current != null &&
+      previous.exerciseId === activeExerciseId &&
+      completed > previous.completed;
+    if (!justFinished) return;
+    const next = pickNextExercise(exercises, activeExerciseId);
+    if (next == null || next.exerciseId === activeExerciseId) return;
+    const timer = setTimeout(advance, ZERO_REST_BEAT_MS);
     return () => clearTimeout(timer);
   }, [enabled, exercises, activeExerciseId, restTimerEndsAt, advance]);
 
+  // Focus the first unfinished exercise once per session. Re-running this every
+  // time focus is cleared made the active card impossible to close: collapsing
+  // it instantly re-selected it (or jumped to the next unfinished exercise).
+  const autoSelected = useRef(false);
+
   useEffect(() => {
-    if (!enabled || activeExerciseId != null || exercises.length === 0) return;
+    // A new session clears the plan before loading the next one.
+    if (exercises.length === 0) {
+      autoSelected.current = false;
+      return;
+    }
+    if (!enabled) return;
+    if (activeExerciseId != null) {
+      autoSelected.current = true;
+      return;
+    }
+    if (autoSelected.current) return;
     const first = pickNextExercise(exercises, null);
-    if (first != null) onAdvance(first.exerciseId);
-  }, [enabled, activeExerciseId, exercises, onAdvance]);
+    if (first == null) return;
+    autoSelected.current = true;
+    onAdvance(first.exerciseId);
+  }, [enabled, exercises, activeExerciseId, onAdvance]);
 };
