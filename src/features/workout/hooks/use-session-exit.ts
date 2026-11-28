@@ -29,6 +29,16 @@ export const useSessionExit = () => {
 
   const finish = useCallback(async () => {
     if (sessionId == null || finishing) return;
+    // The footer disables Finish until a set is logged, but the notification
+    // action can reach this path too. Discard instead of recording a session
+    // that never happened.
+    if (useWorkoutStore.getState().completedSets === 0) {
+      session.cancelSession();
+      endLiveWorkout();
+      syncTodayWidget(false).then(refreshWidgets);
+      goBackOrToday();
+      return;
+    }
     setFinishing(true);
     try {
       const result = session.finishSession();
@@ -49,7 +59,7 @@ export const useSessionExit = () => {
       await endLiveWorkout();
       setFinishing(false);
     }
-  }, [sessionId, finishing, session, rolloverHour, router]);
+  }, [sessionId, finishing, session, rolloverHour, router, goBackOrToday]);
 
   const cancel = useCallback(() => {
     Alert.alert(

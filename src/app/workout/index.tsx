@@ -137,6 +137,7 @@ export default function WorkoutScreen() {
           <WorkoutFooter
             hasSession={store.sessionId != null}
             hasExercises={store.exercises.length > 0}
+            canFinish={store.completedSets > 0}
             onFinish={finish}
           />
         </View>
