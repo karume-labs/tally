@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { resolveTarget, scheduleFor } from "@/db/seed-plan";
 import { migratePresetSchedule } from "@/db/seed-preset-schedule";
+import { migrateSixDayHomePlan } from "@/db/seed-six-day-home";
 import { backfillSupersetGroups } from "@/db/seed-superset-backfill";
 import { getDb } from "./client";
 import SEED from "./data.json";
@@ -66,6 +67,13 @@ export const seed = async () => {
     const existingId = presetIdByName.get(preset.name);
     if (existingId != null) {
       try {
+        await migrateSixDayHomePlan({
+          db,
+          splitId: existingId,
+          preset,
+          exerciseIdByName,
+          now,
+        });
         await backfillSupersetGroups(db, existingId, preset);
         await migratePresetSchedule(db, existingId, preset, now);
       } catch (err) {

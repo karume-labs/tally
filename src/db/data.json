@@ -379,6 +379,71 @@
       "name": "Barbell Romanian Deadlift",
       "muscleGroup": "legs",
       "equipment": "barbell"
+    },
+    {
+      "name": "Barbell Floor Press",
+      "muscleGroup": "chest",
+      "equipment": "barbell"
+    },
+    {
+      "name": "Dumbbell Floor Press",
+      "muscleGroup": "chest",
+      "equipment": "dumbbell"
+    },
+    {
+      "name": "Feet-Elevated Push-Up",
+      "muscleGroup": "chest",
+      "equipment": "bodyweight"
+    },
+    {
+      "name": "Underhand Barbell Row",
+      "muscleGroup": "back",
+      "equipment": "barbell"
+    },
+    {
+      "name": "Barbell Floor Pullover",
+      "muscleGroup": "back",
+      "equipment": "barbell"
+    },
+    {
+      "name": "Superman Hold",
+      "muscleGroup": "back",
+      "equipment": "bodyweight"
+    },
+    {
+      "name": "Walking Dumbbell Lunge",
+      "muscleGroup": "legs",
+      "equipment": "dumbbell"
+    },
+    {
+      "name": "Single-Leg Dumbbell Romanian Deadlift",
+      "muscleGroup": "legs",
+      "equipment": "dumbbell"
+    },
+    {
+      "name": "Standing Dumbbell Calf Raise",
+      "muscleGroup": "legs",
+      "equipment": "dumbbell"
+    },
+    {
+      "name": "Barbell Glute Bridge",
+      "muscleGroup": "legs",
+      "equipment": "barbell"
+    },
+    {
+      "name": "Reverse Crunch",
+      "muscleGroup": "core",
+      "equipment": "bodyweight"
+    },
+    {
+      "name": "Dead Bug",
+      "muscleGroup": "core",
+      "equipment": "bodyweight"
+    },
+    {
+      "name": "Pike Push-Up",
+      "muscleGroup": "shoulders",
+      "equipment": "bodyweight"
     }
   ],
   "splits": [
@@ -734,73 +799,240 @@
     },
     {
       "name": "6-Day Home Barbell & Dumbbell",
-      "description": "30-minute superset plan from the 6-Day Home Dumbbell & Barbell routine. Push, legs, pull, repeat, with Wednesday off. Three rounds per superset; barbell work first, one 2-minute switch to dumbbells.",
+      "description": "30-minute superset plan from the 6-Day Home Workout Plan v2: heavy push, legs and pull days plus volume days, with Wednesday off. The first superset gets four rounds on A days, three everywhere else; barbell work first, then one switch to dumbbells.",
       "schedule": {
-        "mon": "Push Focus",
-        "tue": "Legs & Core",
+        "mon": "Push A",
+        "tue": "Legs & Core A",
         "wed": "Rest",
-        "thu": "Back & Shoulders",
-        "fri": "Push Focus",
-        "sat": "Legs & Core",
-        "sun": "Back & Shoulders"
+        "thu": "Pull A",
+        "fri": "Push B",
+        "sat": "Legs & Core B",
+        "sun": "Pull B"
       },
       "days": [
         {
-          "name": "Push Focus",
+          "name": "Push A",
           "isRestDay": false,
           "exercises": [
             {
-              "name": "Dumbbell Floor Fly",
-              "sets": 3,
-              "reps": "12",
+              "name": "Barbell Floor Press",
+              "sets": 4,
+              "reps": "6-8",
               "rest": 90,
-              "notes": "Superset 1A · 18.5 kg DB · pair with Seated Dumbbell African Curl",
+              "notes": "Superset 1A · 35-40 kg BB · pair with feet-elevated push-ups",
               "group": "Superset 1"
             },
             {
-              "name": "Seated Dumbbell African Curl",
-              "sets": 3,
-              "reps": "12",
+              "name": "Feet-Elevated Push-Up",
+              "sets": 4,
+              "reps": "max",
               "rest": 90,
-              "notes": "Superset 1B · 12 kg DB · rest 90s after both",
+              "notes": "Superset 1B · bodyweight, feet on a chair · stop 1 rep short of failure",
               "group": "Superset 1"
             },
             {
-              "name": "African Curl",
+              "name": "Dumbbell Floor Press",
               "sets": 3,
-              "reps": "12",
+              "reps": "10-12",
               "rest": 90,
-              "notes": "Superset 2A · 12 kg DB · pair with Standard Push-Up",
+              "notes": "Superset 2A · 18.5 kg per hand",
               "group": "Superset 2"
             },
             {
-              "name": "Standard Push-Up",
+              "name": "Overhead Tricep Extension",
               "sets": 3,
-              "reps": "8",
+              "reps": "10-12",
               "rest": 90,
-              "notes": "Superset 2B · bodyweight · rest 60-90s after both",
+              "notes": "Superset 2B · 12-15 kg DB · rest 60-90s after both",
               "group": "Superset 2"
             },
             {
               "name": "Close-Grip Push-Up",
               "sets": 3,
-              "reps": "8",
+              "reps": "max",
               "rest": 60,
-              "notes": "Finisher 3A · bodyweight · pair with Hand Grip Strengthener",
-              "group": "Finisher"
+              "notes": "Superset 3A · bodyweight",
+              "group": "Superset 3"
             },
             {
               "name": "Hand Grip Strengthener",
               "sets": 3,
-              "reps": "8",
+              "reps": "8-12",
               "rest": 60,
-              "notes": "Finisher 3B · max grip · rest 60s after both",
-              "group": "Finisher"
+              "notes": "Superset 3B · max grip · rest 60s after both",
+              "group": "Superset 3"
             }
           ]
         },
         {
-          "name": "Legs & Core",
+          "name": "Legs & Core A",
+          "isRestDay": false,
+          "exercises": [
+            {
+              "name": "Barbell Romanian Deadlift",
+              "sets": 4,
+              "reps": "10",
+              "rest": 90,
+              "notes": "Superset 1A · 40 kg BB · pair with the plank",
+              "group": "Superset 1"
+            },
+            {
+              "name": "Plank",
+              "sets": 4,
+              "reps": "40-60s",
+              "rest": 90,
+              "notes": "Superset 1B · bodyweight · rest 90s after both",
+              "group": "Superset 1"
+            },
+            {
+              "name": "Barbell Glute Bridge",
+              "sets": 3,
+              "reps": "12-15",
+              "rest": 90,
+              "notes": "Superset 2A · 40-50 kg BB, on the floor",
+              "group": "Superset 2"
+            },
+            {
+              "name": "Reverse Crunch",
+              "sets": 3,
+              "reps": "15",
+              "rest": 90,
+              "notes": "Superset 2B · bodyweight · rest 60-90s after both",
+              "group": "Superset 2"
+            },
+            {
+              "name": "Goblet Squat",
+              "sets": 3,
+              "reps": "12",
+              "rest": 60,
+              "notes": "Superset 3A · 20-30 kg DB, 3-second lowering",
+              "group": "Superset 3"
+            },
+            {
+              "name": "Standing Dumbbell Calf Raise",
+              "sets": 3,
+              "reps": "15-20",
+              "rest": 60,
+              "notes": "Superset 3B · 18.5 kg per hand · rest 60s after both",
+              "group": "Superset 3"
+            }
+          ]
+        },
+        {
+          "name": "Rest",
+          "isRestDay": true,
+          "exercises": []
+        },
+        {
+          "name": "Pull A",
+          "isRestDay": false,
+          "exercises": [
+            {
+              "name": "Bent-Over Barbell Row",
+              "sets": 4,
+              "reps": "8-10",
+              "rest": 90,
+              "notes": "Superset 1A · 45-50 kg BB · pair with the superman hold",
+              "group": "Superset 1"
+            },
+            {
+              "name": "Superman Hold",
+              "sets": 4,
+              "reps": "12",
+              "rest": 90,
+              "notes": "Superset 1B · arms out wide, 2-second squeeze · rest 90s after both",
+              "group": "Superset 1"
+            },
+            {
+              "name": "Overhead Press",
+              "sets": 3,
+              "reps": "8-10",
+              "rest": 90,
+              "notes": "Superset 2A · 25-30 kg BB",
+              "group": "Superset 2"
+            },
+            {
+              "name": "Barbell Curl",
+              "sets": 3,
+              "reps": "10",
+              "rest": 90,
+              "notes": "Superset 2B · 20-30 kg BB · rest 60-90s after both",
+              "group": "Superset 2"
+            },
+            {
+              "name": "Single-Arm Dumbbell Row",
+              "sets": 3,
+              "reps": "10-12 / arm",
+              "rest": 60,
+              "notes": "Superset 3A · 18.5 kg DB",
+              "group": "Superset 3"
+            },
+            {
+              "name": "Lateral Raise",
+              "sets": 3,
+              "reps": "12-15",
+              "rest": 60,
+              "notes": "Superset 3B · 7.5 kg per hand · rest 60s after both",
+              "group": "Superset 3"
+            }
+          ]
+        },
+        {
+          "name": "Push B",
+          "isRestDay": false,
+          "exercises": [
+            {
+              "name": "Dumbbell Floor Press",
+              "sets": 3,
+              "reps": "10-15",
+              "rest": 90,
+              "notes": "Superset 1A · 18.5 kg per hand, 3-second lowering",
+              "group": "Superset 1"
+            },
+            {
+              "name": "Dumbbell Floor Fly",
+              "sets": 3,
+              "reps": "12-15",
+              "rest": 90,
+              "notes": "Superset 1B · 12-18.5 kg DB · rest 90s after both",
+              "group": "Superset 1"
+            },
+            {
+              "name": "Push-Up",
+              "sets": 3,
+              "reps": "max",
+              "rest": 90,
+              "notes": "Superset 2A · hands on books or plates for a deeper stretch",
+              "group": "Superset 2"
+            },
+            {
+              "name": "Overhead Tricep Extension",
+              "sets": 3,
+              "reps": "10-12",
+              "rest": 90,
+              "notes": "Superset 2B · 12-15 kg DB · rest 60-90s after both",
+              "group": "Superset 2"
+            },
+            {
+              "name": "Pike Push-Up",
+              "sets": 3,
+              "reps": "8-12",
+              "rest": 60,
+              "notes": "Superset 3A · bodyweight, feet on a chair",
+              "group": "Superset 3"
+            },
+            {
+              "name": "Hand Grip Strengthener",
+              "sets": 3,
+              "reps": "8-12",
+              "rest": 60,
+              "notes": "Superset 3B · max grip · rest 60s after both",
+              "group": "Superset 3"
+            }
+          ]
+        },
+        {
+          "name": "Legs & Core B",
           "isRestDay": false,
           "exercises": [
             {
@@ -808,7 +1040,7 @@
               "sets": 3,
               "reps": "12",
               "rest": 90,
-              "notes": "Superset 1A · 30 kg BB · pair with In and Outs",
+              "notes": "Superset 1A · start 30 kg, add load as reps allow",
               "group": "Superset 1"
             },
             {
@@ -820,11 +1052,11 @@
               "group": "Superset 1"
             },
             {
-              "name": "Barbell Romanian Deadlift",
+              "name": "Walking Dumbbell Lunge",
               "sets": 3,
-              "reps": "12",
+              "reps": "10 / leg",
               "rest": 90,
-              "notes": "Superset 2A · 30 kg BB · pair with Lying Leg Raise",
+              "notes": "Superset 2A · 10-18.5 kg per hand",
               "group": "Superset 2"
             },
             {
@@ -832,83 +1064,78 @@
               "sets": 3,
               "reps": "12",
               "rest": 90,
-              "notes": "Superset 2B · bodyweight · rest 90s after both",
+              "notes": "Superset 2B · bodyweight · rest 60-90s after both",
               "group": "Superset 2"
             },
             {
-              "name": "Goblet Squat",
+              "name": "Single-Leg Dumbbell Romanian Deadlift",
               "sets": 3,
-              "reps": "12",
+              "reps": "10 / leg",
               "rest": 60,
-              "notes": "Superset 3A · 30 kg DB · after the 2-min barbell change",
-              "group": "Finisher"
+              "notes": "Superset 3A · 12-18.5 kg DB",
+              "group": "Superset 3"
             },
             {
-              "name": "Crunch",
+              "name": "Dead Bug",
               "sets": 3,
-              "reps": "12",
+              "reps": "10 / side",
               "rest": 60,
               "notes": "Superset 3B · bodyweight · rest 60s after both",
-              "group": "Finisher"
+              "group": "Superset 3"
             }
           ]
         },
         {
-          "name": "Rest",
-          "isRestDay": true,
-          "exercises": []
-        },
-        {
-          "name": "Back & Shoulders",
+          "name": "Pull B",
           "isRestDay": false,
           "exercises": [
             {
-              "name": "Bent-Over Barbell Row",
+              "name": "Underhand Barbell Row",
               "sets": 3,
-              "reps": "12",
+              "reps": "10-12",
               "rest": 90,
-              "notes": "Superset 1A · 50 kg BB · pair with Barbell Shrug",
+              "notes": "Superset 1A · 40-45 kg BB · pair with the floor pullover",
               "group": "Superset 1"
             },
             {
-              "name": "Barbell Shrug",
+              "name": "Barbell Floor Pullover",
               "sets": 3,
               "reps": "12",
               "rest": 90,
-              "notes": "Superset 1B · 50 kg BB · rest 90s after both",
+              "notes": "Superset 1B · 15-25 kg BB · rest 90s after both",
               "group": "Superset 1"
             },
             {
-              "name": "Barbell Shoulder Press",
+              "name": "Seated Dumbbell Press",
               "sets": 3,
-              "reps": "12",
+              "reps": "10-12",
               "rest": 90,
-              "notes": "Superset 2A · 20 kg BB · pair with Barbell Upright Row",
+              "notes": "Superset 2A · 12-18.5 kg per hand, on a chair",
               "group": "Superset 2"
             },
             {
-              "name": "Barbell Upright Row",
+              "name": "Hammer Curl",
               "sets": 3,
               "reps": "12",
               "rest": 90,
-              "notes": "Superset 2B · 20 kg BB · rest 90s after both",
+              "notes": "Superset 2B · 12 kg per hand · rest 60-90s after both",
               "group": "Superset 2"
             },
             {
-              "name": "Single-Arm Dumbbell Row",
+              "name": "Rear Delt Fly",
               "sets": 3,
-              "reps": "12 / arm",
+              "reps": "15",
               "rest": 60,
-              "notes": "Superset 3A · 18.5 kg DB · after the 2-min barbell change",
-              "group": "Finisher"
+              "notes": "Superset 3A · 7.5 kg per hand, bent over",
+              "group": "Superset 3"
             },
             {
-              "name": "Leaned Lateral Raise",
+              "name": "Lateral Raise",
               "sets": 3,
-              "reps": "12 / arm",
+              "reps": "15-20",
               "rest": 60,
-              "notes": "Superset 3B · 7.5 kg DB · rest 60s after both",
-              "group": "Finisher"
+              "notes": "Superset 3B · 5-7.5 kg per hand, slow lowering · rest 60s after both",
+              "group": "Superset 3"
             }
           ]
         }
