@@ -26,11 +26,30 @@ export const resolveTarget = (entry: string | SeedTarget): SeedTarget =>
 
 const WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
+/** A schedule slot with no training is a rest day, row or not. */
+export const REST_DAY_NAME = "Rest";
+
+// Spread training across the week instead of cycling every day: a 6-day split
+// still gets one rest day, and StrongLifts' "three days per week" is three.
+const TRAINING_SLOTS: Record<number, string[]> = {
+  1: ["mon"],
+  2: ["mon", "thu"],
+  3: ["mon", "wed", "fri"],
+  4: ["mon", "tue", "thu", "fri"],
+  5: ["mon", "tue", "wed", "fri", "sat"],
+  6: ["mon", "tue", "wed", "thu", "fri", "sat"],
+  7: WEEKDAYS,
+};
+
 const defaultWeeklySchedule = (dayNames: string[]): Record<string, string> => {
   const schedule: Record<string, string> = {};
-  for (let i = 0; i < WEEKDAYS.length; i++) {
-    schedule[WEEKDAYS[i]] = dayNames[i % dayNames.length];
-  }
+  for (const day of WEEKDAYS) schedule[day] = REST_DAY_NAME;
+
+  const trainingDays = dayNames.slice(0, 7);
+  const slots = TRAINING_SLOTS[trainingDays.length] ?? WEEKDAYS;
+  trainingDays.forEach((name, index) => {
+    schedule[slots[index]] = name;
+  });
   return schedule;
 };
 

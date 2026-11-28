@@ -7,6 +7,7 @@ import {
   type TodayExercise,
 } from "./day-exercises";
 import * as schema from "./schema";
+import { REST_DAY_NAME } from "./seed-plan";
 
 export type { TodayExercise };
 
@@ -64,6 +65,8 @@ export const getTodayExercises = async (): Promise<TodayExercise[] | null> => {
   const schedule = parseSchedule(split.schedule);
   const dayName = todaySplitDayName(schedule);
   if (!dayName) return null;
+  // Preset schedules use a Rest slot without a day row; it trains nothing.
+  if (dayName === REST_DAY_NAME) return [];
 
   return getExercisesForDay(split.id, dayName);
 };
@@ -127,7 +130,11 @@ export const getTodayInfo = async (): Promise<{
     )
     .limit(1);
 
-  return { dayName, isRestDay: isRestDayRow(rows[0]), schedule };
+  return {
+    dayName,
+    isRestDay: dayName === REST_DAY_NAME || isRestDayRow(rows[0]),
+    schedule,
+  };
 };
 
 /** A split day's exercises, for callers that already hold its row id. */

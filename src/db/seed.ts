@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { resolveTarget, scheduleFor } from "@/db/seed-plan";
+import { migratePresetSchedule } from "@/db/seed-preset-schedule";
 import { backfillSupersetGroups } from "@/db/seed-superset-backfill";
 import { getDb } from "./client";
 import SEED from "./data.json";
@@ -66,6 +67,7 @@ export const seed = async () => {
     if (existingId != null) {
       try {
         await backfillSupersetGroups(db, existingId, preset);
+        await migratePresetSchedule(db, existingId, preset, now);
       } catch (err) {
         console.warn(`[tally.seed] backfill failed "${preset.name}":`, err);
       }

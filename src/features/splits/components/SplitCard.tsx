@@ -43,7 +43,7 @@ export const SplitCard = ({
       )}
       {dayCount != null && (
         <Text className="text-xs text-muted-foreground">
-          {dayCount} day plan{dayCount === 1 ? "" : "s"}
+          {dayCount} training day{dayCount === 1 ? "" : "s"}
         </Text>
       )}
     </View>
