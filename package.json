@@ -32,6 +32,8 @@
     "build:arm64:install": "bun run build:arm64 && bun run install-apk",
     "build:x86_64:install": "bun run build:x86_64 && bun run install-apk",
     "build:universal:install": "bun run build:universal && bun run install-apk",
+    "build:phone": "./android/gradlew -p android assembleRelease -PreactNativeArchitectures=arm64-v8a -Pandroid.enableMinifyInReleaseBuilds=true -Pandroid.enableShrinkResourcesInReleaseBuilds=true",
+    "build:phone:install": "bun run build:phone && bun run update-apk",
     "install-apk": "adb install ./android/app/build/outputs/apk/release/app-release.apk",
     "update-apk": "adb install -r ./android/app/build/outputs/apk/release/app-release.apk",
     "build:install-apk": "bun run build && bun run install-apk",
