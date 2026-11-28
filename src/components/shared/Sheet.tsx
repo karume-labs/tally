@@ -1,12 +1,12 @@
+import type { ReactNode } from "react";
 import {
-  BottomSheetModal,
-  type BottomSheetModal as BottomSheetModalType,
-  BottomSheetScrollView,
-} from "@gorhom/bottom-sheet";
-import { type ReactNode, useEffect, useRef } from "react";
-import { useUniwind } from "uniwind";
+  Modal,
+  Pressable,
+  ScrollView,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { Text } from "@/components/ui/text";
-import { schemeFromTheme, TALLY_THEME } from "@/lib/theme";
 
 interface SheetProps {
   visible: boolean;
@@ -17,9 +17,9 @@ interface SheetProps {
 }
 
 /**
- * Swipe-up sheet with no backdrop and no fade: the panel slides over the
- * screen and drags back down to dismiss, which is the motion gorhom gives for
- * free. Mounted once and presented imperatively so closing animates out.
+ * Bottom-anchored panel presented in a native Modal. The gorhom bottom sheet
+ * this replaced accepted taps but painted nothing on device, which made every
+ * picker invisible.
  */
 export const Sheet = ({
   visible,
@@ -28,38 +28,44 @@ export const Sheet = ({
   subtitle,
   children,
 }: SheetProps) => {
-  const scheme = schemeFromTheme(useUniwind().theme);
-  const colors = TALLY_THEME[scheme];
-  const ref = useRef<BottomSheetModalType>(null);
-
-  useEffect(() => {
-    if (visible) {
-      ref.current?.present();
-    } else {
-      ref.current?.dismiss();
-    }
-  }, [visible]);
+  const { height } = useWindowDimensions();
 
   return (
-    <BottomSheetModal
-      ref={ref}
-      snapPoints={["55%", "90%"]}
-      enablePanDownToClose
-      onDismiss={onClose}
-      backgroundStyle={{ backgroundColor: colors.card }}
-      handleIndicatorStyle={{ backgroundColor: colors.mutedForeground }}
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      statusBarTranslucent
+      onRequestClose={onClose}
     >
-      <BottomSheetScrollView
-        key={visible ? "open" : "closed"}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}
-        keyboardShouldPersistTaps="handled"
-      >
-        <Text className="text-xl font-extrabold">{title}</Text>
-        {subtitle != null && (
-          <Text className="mt-1 text-sm text-muted-foreground">{subtitle}</Text>
-        )}
-        {children}
-      </BottomSheetScrollView>
-    </BottomSheetModal>
+      <View className="flex-1 justify-end">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+          className="flex-1"
+          onPress={onClose}
+        />
+        <View
+          className="rounded-t-3xl border border-b-0 border-border bg-card"
+          style={{ maxHeight: height * 0.9 }}
+        >
+          <View className="items-center py-3">
+            <View className="h-1 w-10 rounded-full bg-muted-foreground/40" />
+          </View>
+          <ScrollView
+            contentContainerClassName="px-5 pb-10"
+            keyboardShouldPersistTaps="handled"
+          >
+            <Text className="text-xl font-extrabold">{title}</Text>
+            {subtitle != null && (
+              <Text className="mt-1 text-sm text-muted-foreground">
+                {subtitle}
+              </Text>
+            )}
+            {children}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
   );
 };
