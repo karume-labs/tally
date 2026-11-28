@@ -1,0 +1,72 @@
+diff --git a/android/src/main/java/com/reactnativeandroidwidget/oss/HeadlessJsTaskWorker.java b/android/src/main/java/com/reactnativeandroidwidget/oss/HeadlessJsTaskWorker.java
+index 867f716191d66ff4750b8101c2e317fb27d851c8..12a2e26b5d473165a97710b528888c3591c77499
+--- a/android/src/main/java/com/reactnativeandroidwidget/oss/HeadlessJsTaskWorker.java
++++ b/android/src/main/java/com/reactnativeandroidwidget/oss/HeadlessJsTaskWorker.java
+@@ -24,6 +24,8 @@
+ package com.reactnativeandroidwidget.oss;
+ 
+ import android.content.Context;
++import android.os.Handler;
++import android.os.Looper;
+ 
+ import androidx.annotation.NonNull;
+ import androidx.annotation.Nullable;
+@@ -43,6 +45,13 @@ import com.facebook.react.jstasks.HeadlessJsTaskEventListener;
+ import com.google.common.util.concurrent.ListenableFuture;
+ 
+ public abstract class HeadlessJsTaskWorker extends ListenableWorker implements HeadlessJsTaskEventListener {
++    // A cold start hands us a ReactContext before its JS bundle has run. Queuing
++    // the task in that window makes HeadlessJsTaskContext drop it with
++    // "CatalystInstance not available", so wait for an attached instance and let
++    // WorkManager retry if it never attaches.
++    private static final long INSTANCE_WAIT_INTERVAL_MS = 100;
++    private static final int INSTANCE_WAIT_ATTEMPTS = 200;
++
+     private int taskId;
+     private CallbackToFutureAdapter.Completer<Result> mCompleter;
+ 
+@@ -77,16 +86,42 @@ public abstract class HeadlessJsTaskWorker extends ListenableWorker implements H
+         if (reactContext == null) {
+             reactHost.addReactInstanceEventListener(new ReactInstanceEventListener() {
+                 public void onReactContextInitialized(ReactContext reactContext) {
+-                    HeadlessJsTaskWorker.this.invokeStartTask(reactContext, taskConfig);
++                    HeadlessJsTaskWorker.this.awaitActiveReactInstance(reactContext, taskConfig);
+                     reactHost.removeReactInstanceEventListener(this);
+                 }
+             });
+             reactHost.start();
+         } else {
+-            this.invokeStartTask(reactContext, taskConfig);
++            this.awaitActiveReactInstance(reactContext, taskConfig);
+         }
+     }
+ 
++    private void awaitActiveReactInstance(
++        final ReactContext reactContext,
++        final HeadlessJsTaskConfig taskConfig
++    ) {
++        UiThreadUtil.runOnUiThread(
++            new Runnable() {
++                private int attempts = 0;
++
++                @Override
++                public void run() {
++                    if (reactContext.hasActiveReactInstance()) {
++                        invokeStartTask(reactContext, taskConfig);
++                        return;
++                    }
++                    if (attempts++ >= INSTANCE_WAIT_ATTEMPTS) {
++                        if (mCompleter != null && !isStopped()) {
++                            mCompleter.set(Result.retry());
++                        }
++                        return;
++                    }
++                    new Handler(Looper.getMainLooper()).postDelayed(this, INSTANCE_WAIT_INTERVAL_MS);
++                }
++            }
++        );
++    }
++
+     private void invokeStartTask(ReactContext reactContext, final HeadlessJsTaskConfig taskConfig) {
+         final HeadlessJsTaskContext headlessJsTaskContext = HeadlessJsTaskContext.getInstance(reactContext);
+         headlessJsTaskContext.addTaskEventListener(this);

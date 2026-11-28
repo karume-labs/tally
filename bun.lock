@@ -82,6 +82,7 @@
     },
   },
   "patchedDependencies": {
+    "react-native-android-widget@0.22.1": "patches/react-native-android-widget@0.22.1.patch",
     "react-native-notify-kit@10.10.1": "patches/react-native-notify-kit@10.10.1.patch",
   },
   "packages": {
