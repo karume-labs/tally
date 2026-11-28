@@ -1,5 +1,6 @@
 import { getDb } from "@/db/client";
 import * as schema from "@/db/schema";
+import { createId } from "@/lib/utils";
 import type { FullBackup } from "./backup-types";
 
 export const importBackup = async (
@@ -13,25 +14,13 @@ export const importBackup = async (
   const db = getDb();
   const data = backup.data;
 
-  if (overwrite) {
-    await db.delete(schema.xpEvents);
-    await db.delete(schema.streakHistory);
-    await db.delete(schema.streakState);
-    await db.delete(schema.setLogs);
-    await db.delete(schema.sessions);
-    await db.delete(schema.splitDayExercises);
-    await db.delete(schema.splitDays);
-    await db.delete(schema.splits);
-    await db.delete(schema.exercises);
-  }
-
+  // Ids are remapped so restoring a backup onto a database that already has a
+  // row with the same id cannot collide. createId works on Hermes, where
+  // crypto.randomUUID is not available.
   const idMap: Record<string, string> = {};
-
   const mapId = (id: string): string => {
-    if (idMap[id]) return idMap[id];
-    const newId = crypto.randomUUID();
-    idMap[id] = newId;
-    return newId;
+    idMap[id] ??= createId();
+    return idMap[id];
   };
 
   const exercises = data.exercises.map((row) => ({
@@ -42,42 +31,32 @@ export const importBackup = async (
   const splitDays = data.splitDays.map((row) => ({
     ...row,
     id: mapId(row.id),
+    splitId: mapId(row.splitId),
   }));
-  const sessions = data.sessions.map((row) => ({ ...row, id: mapId(row.id) }));
+  const sessions = data.sessions.map((row) => ({
+    ...row,
+    id: mapId(row.id),
+    splitDayId: row.splitDayId != null ? (idMap[row.splitDayId] ?? null) : null,
+  }));
   const xpEvents = data.xpEvents.map((row) => ({ ...row, id: mapId(row.id) }));
-
-  const exerciseIdMap = new Map(exercises.map((e) => [e.id, e.id]));
-  const splitDayIdMap = new Map(splitDays.map((d) => [d.id, d.id]));
-  const sessionIdMap = new Map(sessions.map((s) => [s.id, s.id]));
 
   const splitDayExercises = data.splitDayExercises.map((row) => ({
     ...row,
     id: mapId(row.id),
-    splitDayId: splitDayIdMap.get(row.splitDayId) ?? mapId(row.splitDayId),
-    exerciseId: exerciseIdMap.get(row.exerciseId) ?? mapId(row.exerciseId),
+    splitDayId: mapId(row.splitDayId),
+    exerciseId: mapId(row.exerciseId),
   }));
 
   const setLogs = data.setLogs.map((row) => ({
     ...row,
     id: mapId(row.id),
-    sessionId: sessionIdMap.get(row.sessionId) ?? mapId(row.sessionId),
-    exerciseId: exerciseIdMap.get(row.exerciseId) ?? mapId(row.exerciseId),
-  }));
-
-  const fixedSessions = sessions.map((row) => ({
-    ...row,
-    splitDayId:
-      row.splitDayId != null
-        ? (splitDayIdMap.get(row.splitDayId) ?? mapId(row.splitDayId))
-        : null,
+    sessionId: mapId(row.sessionId),
+    exerciseId: mapId(row.exerciseId),
   }));
 
   const fixedStreakHistory = data.streakHistory.map((row) => ({
     ...row,
-    sessionId:
-      row.sessionId != null
-        ? (sessionIdMap.get(row.sessionId) ?? mapId(row.sessionId))
-        : null,
+    sessionId: row.sessionId != null ? (idMap[row.sessionId] ?? null) : null,
   }));
 
   const fixedStreakState = data.streakState.map((row) => ({
@@ -92,22 +71,52 @@ export const importBackup = async (
     totalVolume: row.totalVolume ?? 0,
   }));
 
-  // Empty arrays make drizzle throw ("No values to set"), and streak_state must
-  // only be inserted once or the id=1 primary key collides.
-  if (exercises.length > 0)
-    await db.insert(schema.exercises).values(exercises).run();
-  if (splits.length > 0) await db.insert(schema.splits).values(splits).run();
-  if (splitDays.length > 0)
-    await db.insert(schema.splitDays).values(splitDays).run();
-  if (splitDayExercises.length > 0)
-    await db.insert(schema.splitDayExercises).values(splitDayExercises).run();
-  if (fixedSessions.length > 0)
-    await db.insert(schema.sessions).values(fixedSessions).run();
-  if (setLogs.length > 0) await db.insert(schema.setLogs).values(setLogs).run();
-  if (fixedStreakState.length > 0)
-    await db.insert(schema.streakState).values(fixedStreakState).run();
-  if (fixedStreakHistory.length > 0)
-    await db.insert(schema.streakHistory).values(fixedStreakHistory).run();
-  if (xpEvents.length > 0)
-    await db.insert(schema.xpEvents).values(xpEvents).run();
+  // A restore either replaces everything or leaves the database untouched: the
+  // old data was deleted before the inserts, so a failure halfway through used
+  // to wipe the user's workouts. The expo-sqlite driver commits as soon as the
+  // callback returns, so the callback must be synchronous — every statement in
+  // it executes immediately, and a throw rolls the whole restore back.
+  db.transaction((tx) => {
+    if (overwrite) {
+      tx.delete(schema.xpEvents).run();
+      tx.delete(schema.streakHistory).run();
+      tx.delete(schema.streakState).run();
+      tx.delete(schema.setLogs).run();
+      tx.delete(schema.sessions).run();
+      tx.delete(schema.splitDayExercises).run();
+      tx.delete(schema.splitDays).run();
+      tx.delete(schema.splits).run();
+      tx.delete(schema.exercises).run();
+    }
+
+    // Empty arrays make drizzle throw ("No values to set"), and streak_state
+    // must only be inserted once or the id=1 primary key collides.
+    if (exercises.length > 0) {
+      tx.insert(schema.exercises).values(exercises).run();
+    }
+    if (splits.length > 0) {
+      tx.insert(schema.splits).values(splits).run();
+    }
+    if (splitDays.length > 0) {
+      tx.insert(schema.splitDays).values(splitDays).run();
+    }
+    if (splitDayExercises.length > 0) {
+      tx.insert(schema.splitDayExercises).values(splitDayExercises).run();
+    }
+    if (sessions.length > 0) {
+      tx.insert(schema.sessions).values(sessions).run();
+    }
+    if (setLogs.length > 0) {
+      tx.insert(schema.setLogs).values(setLogs).run();
+    }
+    if (fixedStreakState.length > 0) {
+      tx.insert(schema.streakState).values(fixedStreakState).run();
+    }
+    if (fixedStreakHistory.length > 0) {
+      tx.insert(schema.streakHistory).values(fixedStreakHistory).run();
+    }
+    if (xpEvents.length > 0) {
+      tx.insert(schema.xpEvents).values(xpEvents).run();
+    }
+  });
 };
