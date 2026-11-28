@@ -2,21 +2,19 @@ import { eq } from "drizzle-orm";
 import type { getDb } from "./client";
 import type SEED from "./data.json";
 import * as schema from "./schema";
-import { scheduleFor } from "./seed-plan";
+import { REST_DAY_NAME, scheduleFor } from "./seed-plan";
 
 type SeedDb = ReturnType<typeof getDb>;
 type SeedPreset = (typeof SEED.splits)[number];
 
-const scheduleHasRest = (raw: string): boolean => {
+const parseSlots = (raw: string): Record<string, string> | null => {
   try {
     const parsed: unknown = JSON.parse(raw);
-    return (
-      typeof parsed === "object" &&
-      parsed != null &&
-      Object.values(parsed).includes("Rest")
-    );
+    return typeof parsed === "object" && parsed != null
+      ? (parsed as Record<string, string>)
+      : null;
   } catch {
-    return false;
+    return null;
   }
 };
 
@@ -31,17 +29,30 @@ export const migratePresetSchedule = async (
   preset: SeedPreset,
   now: Date,
 ): Promise<void> => {
-  if ("schedule" in preset) return;
   const rows = await db
     .select({ schedule: schema.splits.schedule })
     .from(schema.splits)
     .where(eq(schema.splits.id, splitId))
     .limit(1);
   const current = rows[0];
-  if (current == null || scheduleHasRest(current.schedule)) return;
+  if (current == null) return;
+
+  const canonical = JSON.stringify(scheduleFor(preset));
+  if (current.schedule === canonical) return;
+
+  // Only rewrite a week that still names this preset's own days. Someone who
+  // renamed or replaced days has made the split their own, so keep their week.
+  const allowed = new Set([
+    REST_DAY_NAME,
+    ...preset.days.map((day) => day.name),
+  ]);
+  const slots = parseSlots(current.schedule);
+  if (slots == null) return;
+  if (!Object.values(slots).every((name) => allowed.has(name))) return;
+
   await db
     .update(schema.splits)
-    .set({ schedule: JSON.stringify(scheduleFor(preset)), updatedAt: now })
+    .set({ schedule: canonical, updatedAt: now })
     .where(eq(schema.splits.id, splitId))
     .run();
 };

@@ -46,6 +46,17 @@ const defaultWeeklySchedule = (dayNames: string[]): Record<string, string> => {
   for (const day of WEEKDAYS) schedule[day] = REST_DAY_NAME;
 
   const trainingDays = dayNames.slice(0, 7);
+
+  // Two templates is an A/B program such as StrongLifts, which runs three
+  // sessions a week by alternating them: A, B, A.
+  if (trainingDays.length === 2) {
+    const sequence = [0, 1, 0];
+    ["mon", "wed", "fri"].forEach((slot, index) => {
+      schedule[slot] = trainingDays[sequence[index]];
+    });
+    return schedule;
+  }
+
   const slots = TRAINING_SLOTS[trainingDays.length] ?? WEEKDAYS;
   trainingDays.forEach((name, index) => {
     schedule[slots[index]] = name;
