@@ -1,4 +1,4 @@
-import { View, type ViewStyle } from "react-native";
+import { FlexWidget, type FlexWidgetStyle } from "react-native-android-widget";
 import type { DayDot } from "@/services/streak";
 
 const DOT_COLORS: Record<DayDot["status"], string> = {
@@ -28,18 +28,18 @@ export const StreakDotRow = ({ dots }: StreakDotRowProps) => {
       : [...placeholderDots(WEEK_LENGTH - week.length), ...week];
 
   return (
-    <View
+    <FlexWidget
       style={
         {
           flexDirection: "row",
           justifyContent: "space-between",
           marginTop: 8,
           paddingHorizontal: 4,
-        } as ViewStyle
+        } as FlexWidgetStyle
       }
     >
       {padded.map((dot) => (
-        <View
+        <FlexWidget
           key={dot.dayKey}
           style={
             {
@@ -48,10 +48,10 @@ export const StreakDotRow = ({ dots }: StreakDotRowProps) => {
               borderRadius: 5,
               backgroundColor: DOT_COLORS[dot.status],
               marginHorizontal: 2,
-            } as ViewStyle
+            } as FlexWidgetStyle
           }
         />
       ))}
-    </View>
+    </FlexWidget>
   );
 };

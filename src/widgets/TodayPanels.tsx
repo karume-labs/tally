@@ -1,5 +1,9 @@
-import { View, type ViewStyle } from "react-native";
-import { TextWidget, type TextWidgetStyle } from "react-native-android-widget";
+import {
+  FlexWidget,
+  type FlexWidgetStyle,
+  TextWidget,
+  type TextWidgetStyle,
+} from "react-native-android-widget";
 import type { DayDot } from "@/services/streak";
 import { StreakDotRow } from "./StreakDotRow";
 
@@ -7,6 +11,10 @@ const TEXT = "#f7f5ed";
 const MUTED = "#a9abb4";
 const ACCENT = "#ffd340";
 
+// Widgets render in a headless task with no React tree above them, so every
+// layout node must be a FlexWidget: react-native-android-widget only converts
+// its own components into RemoteViews, and a plain react-native View pulls in
+// uniwind's className patching, which has no context there and throws.
 export interface PanelProps {
   dayName: string | null;
   tomorrowName: string | null;
@@ -29,7 +37,9 @@ export const TodayPanel = ({
 }: PanelProps) => {
   if (isRestDay) {
     return (
-      <View style={{ alignItems: "center", gap: 2 } as ViewStyle}>
+      <FlexWidget
+        style={{ alignItems: "center", flexGap: 2 } as FlexWidgetStyle}
+      >
         <TextWidget
           text="Rest day"
           style={{ fontSize: 18, color: TEXT, fontWeight: "bold" }}
@@ -38,12 +48,14 @@ export const TodayPanel = ({
           text="Recover and grow"
           style={{ fontSize: 12, color: MUTED }}
         />
-      </View>
+      </FlexWidget>
     );
   }
   if (dayName == null) {
     return (
-      <View style={{ alignItems: "center", gap: 2 } as ViewStyle}>
+      <FlexWidget
+        style={{ alignItems: "center", flexGap: 2 } as FlexWidgetStyle}
+      >
         <TextWidget
           text="No split yet"
           style={{ fontSize: 16, color: TEXT, fontWeight: "bold" }}
@@ -52,11 +64,11 @@ export const TodayPanel = ({
           text="Tap to pick one"
           style={{ fontSize: 11, color: MUTED }}
         />
-      </View>
+      </FlexWidget>
     );
   }
   return (
-    <View style={{ alignItems: "center", gap: 2 } as ViewStyle}>
+    <FlexWidget style={{ alignItems: "center", flexGap: 2 } as FlexWidgetStyle}>
       <TextWidget
         text={dayName}
         style={{ fontSize: 17, color: TEXT, fontWeight: "bold" }}
@@ -67,14 +79,14 @@ export const TodayPanel = ({
         }
         style={{ fontSize: 12, color: sessionActive ? "#c9db74" : MUTED }}
       />
-      <View
+      <FlexWidget
         style={
           {
             flexDirection: "row",
             flexWrap: "wrap",
             justifyContent: "center",
-            gap: 2,
-          } as ViewStyle
+            flexGap: 2,
+          } as FlexWidgetStyle
         }
       >
         {exerciseNames.slice(0, expanded ? 2 : 1).map((name) => (
@@ -84,7 +96,7 @@ export const TodayPanel = ({
             style={{ fontSize: 11, color: MUTED } as TextWidgetStyle}
           />
         ))}
-      </View>
+      </FlexWidget>
       {!sessionActive && (
         <TextWidget
           text="TAP TO START"
@@ -96,12 +108,12 @@ export const TodayPanel = ({
           }}
         />
       )}
-    </View>
+    </FlexWidget>
   );
 };
 
 export const TomorrowPanel = ({ tomorrowName }: PanelProps) => (
-  <View style={{ alignItems: "center", gap: 3 } as ViewStyle}>
+  <FlexWidget style={{ alignItems: "center", flexGap: 3 } as FlexWidgetStyle}>
     <TextWidget
       text="TOMORROW"
       style={{
@@ -119,15 +131,15 @@ export const TomorrowPanel = ({ tomorrowName }: PanelProps) => (
       text={tomorrowName == null ? "Pick a split" : "Be ready for it"}
       style={{ fontSize: 11, color: MUTED }}
     />
-  </View>
+  </FlexWidget>
 );
 
 export const StreakPanel = ({ streak, dots }: PanelProps) => (
-  <View style={{ alignItems: "center", gap: 2 } as ViewStyle}>
+  <FlexWidget style={{ alignItems: "center", flexGap: 2 } as FlexWidgetStyle}>
     <TextWidget
       text={`${streak} day streak`}
       style={{ fontSize: 17, color: ACCENT, fontWeight: "bold" }}
     />
     <StreakDotRow dots={dots} />
-  </View>
+  </FlexWidget>
 );

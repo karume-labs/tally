@@ -1,4 +1,3 @@
-import { View, type ViewStyle } from "react-native";
 import {
   FlexWidget,
   type FlexWidgetStyle,
@@ -34,14 +33,14 @@ export const StreakWidget = ({
       }
       clickAction="OPEN_STREAK"
     >
-      <View
+      <FlexWidget
         style={
           {
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
-            gap: 6,
-          } as ViewStyle
+            flexGap: 6,
+          } as FlexWidgetStyle
         }
       >
         <TextWidget
@@ -56,14 +55,14 @@ export const StreakWidget = ({
             } as TextWidgetStyle
           }
         />
-        <View
+        <FlexWidget
           style={
             {
               flexDirection: "row",
-              alignItems: "baseline",
+              alignItems: "flex-end",
               justifyContent: "center",
-              gap: 4,
-            } as ViewStyle
+              flexGap: 4,
+            } as FlexWidgetStyle
           }
         >
           <TextWidget
@@ -80,8 +79,8 @@ export const StreakWidget = ({
             text="day streak"
             style={{ fontSize: 10, color: "#a9abb4" } as TextWidgetStyle}
           />
-        </View>
-      </View>
+        </FlexWidget>
+      </FlexWidget>
       <StreakDotRow dots={dots} />
       <TextWidget
         text={`Best: ${longest}`}
