@@ -1,6 +1,7 @@
 import { getDb } from "@/db/client";
 import * as schema from "@/db/schema";
 import { createId } from "@/lib/utils";
+import { reviveBackupDates } from "./backup-dates";
 import type { FullBackup } from "./backup-types";
 
 export const importBackup = async (
@@ -12,7 +13,7 @@ export const importBackup = async (
   }
 
   const db = getDb();
-  const data = backup.data;
+  const data = reviveBackupDates(backup.data);
 
   // Ids are remapped so restoring a backup onto a database that already has a
   // row with the same id cannot collide. createId works on Hermes, where

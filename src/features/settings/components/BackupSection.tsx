@@ -5,6 +5,7 @@ import { Alert, View } from "react-native";
 import { ActionButton } from "@/components/shared/ActionButton";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { Text } from "@/components/ui/text";
+import { seed } from "@/db/seed";
 import { loadStreakRow } from "@/db/streak";
 import {
   pickBackupFile,
@@ -53,6 +54,9 @@ export const BackupSection = () => {
     setBusy(true);
     try {
       await importBackup(backup, true);
+      // A backup can carry outlines such as a preset's old seven-day schedule;
+      // re-running the seed applies the same fixes a fresh launch would.
+      await seed();
       const row = await loadStreakRow();
       if (row != null) useStreakStore.getState().setRow(row);
       useWorkoutStore.getState().reset();

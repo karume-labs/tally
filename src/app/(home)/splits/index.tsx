@@ -1,16 +1,15 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { Layers, Plus } from "lucide-react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useUniwind } from "uniwind";
 import { ActionButton } from "@/components/shared/ActionButton";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
-import { getDb } from "@/db/client";
-import * as schema from "@/db/schema";
 import { SplitCard } from "@/features/splits/components/SplitCard";
 import { useSplits } from "@/features/splits/hooks/use-splits";
+import { trainingDaysPerWeek } from "@/features/splits/services/weekly-plan";
 import { schemeFromTheme, TALLY_THEME } from "@/lib/theme";
 
 export default function SplitsScreen() {
@@ -18,7 +17,6 @@ export default function SplitsScreen() {
   const scheme = schemeFromTheme(useUniwind().theme);
   const colors = TALLY_THEME[scheme];
   const { splits, loading, refetch } = useSplits();
-  const [dayCounts, setDayCounts] = useState<Record<string, number>>({});
 
   // Re-read after returning from a detail screen so "Active" reflects the
   // split that was just activated.
@@ -27,25 +25,6 @@ export default function SplitsScreen() {
       refetch();
     }, [refetch]),
   );
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const rows = await getDb().select().from(schema.splitDays);
-      if (cancelled) return;
-      // Count day templates, not weekday slots: presets repeat the same plan
-      // across the week, and the detail screen shows the weekly cadence.
-      const counts: Record<string, number> = {};
-      for (const row of rows) {
-        if (row.isRestDay === true) continue;
-        counts[row.splitId] = (counts[row.splitId] ?? 0) + 1;
-      }
-      setDayCounts(counts);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   if (loading) {
     return (
@@ -92,7 +71,7 @@ export default function SplitsScreen() {
             name={split.name}
             description={split.description}
             isActive={split.isActive}
-            dayCount={dayCounts[split.id]}
+            dayCount={trainingDaysPerWeek(split.schedule) || undefined}
             onPress={() =>
               router.push({
                 pathname: "/splits/[id]",

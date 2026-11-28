@@ -1,3 +1,4 @@
+import { REST_DAY_NAME } from "@/db/seed-plan";
 import { parseSchedule } from "@/db/today";
 
 export const WEEKDAY_ORDER = [
@@ -27,3 +28,11 @@ export const weekSchedule = (schedule: string): ScheduledDay[] => {
   }
   return days;
 };
+
+/**
+ * Days actually trained each week, from the schedule rather than the day list.
+ * StrongLifts has two day templates but trains three times, so counting
+ * templates would understate the plan.
+ */
+export const trainingDaysPerWeek = (schedule: string): number =>
+  weekSchedule(schedule).filter((day) => day.dayName !== REST_DAY_NAME).length;
