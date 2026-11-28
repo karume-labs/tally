@@ -1,8 +1,9 @@
 import { useRouter } from "expo-router";
 import { Download, Upload } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, View } from "react-native";
+import { View } from "react-native";
 import { ActionButton } from "@/components/shared/ActionButton";
+import { ConfirmSheet } from "@/components/shared/ConfirmSheet";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { Text } from "@/components/ui/text";
 import { seed } from "@/db/seed";
@@ -26,6 +27,7 @@ const sessionCount = (backup: FullBackup): number =>
 export const BackupSection = () => {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState<FullBackup | null>(null);
   const [status, setStatus] = useState<string | null>(() => {
     const metadata = getExportedMetadata();
     return metadata ? `Last backup ${formatWhen(metadata.exportedAt)}` : null;
@@ -61,10 +63,12 @@ export const BackupSection = () => {
       if (row != null) useStreakStore.getState().setRow(row);
       useWorkoutStore.getState().reset();
       setStatus(`Restored ${sessionCount(backup)} sessions`);
+      setPending(null);
       router.replace("/");
     } catch (err) {
       console.warn("[tally.backup] import failed:", err);
       setStatus("Import failed. Your current data is unchanged.");
+      setPending(null);
     } finally {
       setBusy(false);
     }
@@ -76,20 +80,7 @@ export const BackupSection = () => {
     try {
       const backup = await pickBackupFile();
       if (backup == null) return;
-      Alert.alert(
-        "Replace all data?",
-        `This erases your current splits, workouts and streak and replaces them with the backup from ${formatWhen(backup.metadata.exportedAt)} (${sessionCount(backup)} sessions). This cannot be undone.`,
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Replace everything",
-            style: "destructive",
-            onPress: () => {
-              runImport(backup);
-            },
-          },
-        ],
-      );
+      setPending(backup);
     } catch (err) {
       console.warn("[tally.backup] could not read backup:", err);
       setStatus("That file is not a readable Tally backup.");
@@ -99,32 +90,52 @@ export const BackupSection = () => {
   };
 
   return (
-    <SectionCard title="Backup">
-      <View className="gap-3">
-        <Text className="text-sm text-muted-foreground">
-          Save a copy of your exercises, splits, workouts and streak, or restore
-          one from a file. Restoring replaces everything on this device.
-        </Text>
-        <View className="gap-2">
-          <ActionButton
-            icon={Download}
-            label="Export backup"
-            variant="secondary"
-            disabled={busy}
-            onPress={onExport}
-          />
-          <ActionButton
-            icon={Upload}
-            label="Restore backup"
-            variant="danger"
-            disabled={busy}
-            onPress={onImport}
-          />
+    <>
+      <SectionCard title="Backup">
+        <View className="gap-3">
+          <Text className="text-sm text-muted-foreground">
+            Save a copy of your exercises, splits, workouts and streak, or
+            restore one from a file. Restoring replaces everything on this
+            device.
+          </Text>
+          <View className="gap-2">
+            <ActionButton
+              icon={Download}
+              label="Export backup"
+              variant="secondary"
+              disabled={busy}
+              onPress={onExport}
+            />
+            <ActionButton
+              icon={Upload}
+              label="Restore backup"
+              variant="danger"
+              disabled={busy}
+              onPress={onImport}
+            />
+          </View>
+          {status != null && (
+            <Text className="text-xs text-muted-foreground">{status}</Text>
+          )}
         </View>
-        {status != null && (
-          <Text className="text-xs text-muted-foreground">{status}</Text>
-        )}
-      </View>
-    </SectionCard>
+      </SectionCard>
+
+      <ConfirmSheet
+        visible={pending != null}
+        title="Replace all data?"
+        message={
+          pending == null
+            ? undefined
+            : `This erases your current splits, workouts and streak and replaces them with the backup from ${formatWhen(pending.metadata.exportedAt)} (${sessionCount(pending)} sessions). This cannot be undone.`
+        }
+        confirmLabel="Replace everything"
+        destructive
+        busy={busy}
+        onConfirm={() => {
+          if (pending != null) runImport(pending);
+        }}
+        onClose={() => setPending(null)}
+      />
+    </>
   );
 };

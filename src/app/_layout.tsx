@@ -1,6 +1,5 @@
 import "@/global.css";
 
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { PortalHost } from "@rn-primitives/portal";
 import { Stack } from "expo-router";
 import { ThemeProvider } from "expo-router/react-navigation";
@@ -103,41 +102,39 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={navTheme}>
         <StatusBar style={scheme === "dark" ? "light" : "dark"} />
-        <BottomSheetModalProvider>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: navTheme.colors.background },
-            }}
-          >
-            {/* Lives above the tabs on purpose: it is reached from Home and
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: navTheme.colors.background },
+          }}
+        >
+          {/* Lives above the tabs on purpose: it is reached from Home and
                 Settings, not from a tab, so showing the tab bar left every tab
                 looking unselected. Pennywise routes its Debts screen the same way. */}
-            <Stack.Screen
-              name="exercises"
-              options={{
-                headerShown: true,
-                title: "Exercises",
-                headerStyle: { backgroundColor: navTheme.colors.background },
-                headerTintColor: navTheme.colors.text,
-                headerShadowVisible: false,
-                headerTitleStyle: { fontWeight: "800", fontSize: 20 },
-              }}
-            />
-            <Stack.Screen
-              name="about"
-              options={{
-                headerShown: true,
-                title: "About",
-                headerStyle: { backgroundColor: navTheme.colors.background },
-                headerTintColor: navTheme.colors.text,
-                headerShadowVisible: false,
-                headerTitleStyle: { fontWeight: "800", fontSize: 20 },
-              }}
-            />
-          </Stack>
-          <PortalHost />
-        </BottomSheetModalProvider>
+          <Stack.Screen
+            name="exercises"
+            options={{
+              headerShown: true,
+              title: "Exercises",
+              headerStyle: { backgroundColor: navTheme.colors.background },
+              headerTintColor: navTheme.colors.text,
+              headerShadowVisible: false,
+              headerTitleStyle: { fontWeight: "800", fontSize: 20 },
+            }}
+          />
+          <Stack.Screen
+            name="about"
+            options={{
+              headerShown: true,
+              title: "About",
+              headerStyle: { backgroundColor: navTheme.colors.background },
+              headerTintColor: navTheme.colors.text,
+              headerShadowVisible: false,
+              headerTitleStyle: { fontWeight: "800", fontSize: 20 },
+            }}
+          />
+        </Stack>
+        <PortalHost />
       </ThemeProvider>
     </GestureHandlerRootView>
   );

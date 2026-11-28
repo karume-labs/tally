@@ -1,12 +1,14 @@
-import type { ReactNode } from "react";
-import {
-  Modal,
-  Pressable,
-  ScrollView,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  type BottomSheetBackdropProps,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
+import { type ReactNode, useCallback } from "react";
+import { Modal, useWindowDimensions } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useUniwind } from "uniwind";
 import { Text } from "@/components/ui/text";
+import { schemeFromTheme, TALLY_THEME } from "@/lib/theme";
 
 interface SheetProps {
   visible: boolean;
@@ -17,9 +19,10 @@ interface SheetProps {
 }
 
 /**
- * Bottom-anchored panel presented in a native Modal. The gorhom bottom sheet
- * this replaced accepted taps but painted nothing on device, which made every
- * picker invisible.
+ * Bottom-anchored panel rendered by gorhom, hosted in a native window.
+ * gorhom's own modal paints underneath expo-router's native screen stack on
+ * Android, and a dynamic-sized sheet with a scroll view never opened at all,
+ * so the sheet uses a fixed snap point inside a transparent Modal.
  */
 export const Sheet = ({
   visible,
@@ -28,32 +31,45 @@ export const Sheet = ({
   subtitle,
   children,
 }: SheetProps) => {
+  const colors = TALLY_THEME[schemeFromTheme(useUniwind().theme)];
   const { height } = useWindowDimensions();
+
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        opacity={0.6}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
 
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType="fade"
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <View className="flex-1 justify-end">
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Close"
-          className="flex-1"
-          onPress={onClose}
-        />
-        <View
-          className="rounded-t-3xl border border-b-0 border-border bg-card"
-          style={{ maxHeight: height * 0.9 }}
+      {/* Gestures inside a native Modal need their own handler root. */}
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <BottomSheet
+          index={0}
+          snapPoints={[Math.round(height * 0.85)]}
+          enablePanDownToClose
+          onClose={onClose}
+          backdropComponent={renderBackdrop}
+          backgroundStyle={{ backgroundColor: colors.card }}
+          handleIndicatorStyle={{ backgroundColor: colors.mutedForeground }}
+          keyboardBehavior="interactive"
+          android_keyboardInputMode="adjustResize"
         >
-          <View className="items-center py-3">
-            <View className="h-1 w-10 rounded-full bg-muted-foreground/40" />
-          </View>
-          <ScrollView
-            contentContainerClassName="px-5 pb-10"
+          <BottomSheetScrollView
+            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
             keyboardShouldPersistTaps="handled"
           >
             <Text className="text-xl font-extrabold">{title}</Text>
@@ -63,9 +79,9 @@ export const Sheet = ({
               </Text>
             )}
             {children}
-          </ScrollView>
-        </View>
-      </View>
+          </BottomSheetScrollView>
+        </BottomSheet>
+      </GestureHandlerRootView>
     </Modal>
   );
 };

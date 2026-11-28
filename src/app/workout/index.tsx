@@ -1,8 +1,8 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RestTimerBar } from "@/components/shared/RestTimerBar";
+import { CancelSessionSheet } from "@/features/workout/components/CancelSessionSheet";
 import { EmptyStateCard } from "@/features/workout/components/EmptyStateCard";
 import { NoActiveSplitCard } from "@/features/workout/components/NoActiveSplitCard";
 import { RestDayCard } from "@/features/workout/components/RestDayCard";
@@ -26,7 +26,6 @@ import { useWorkoutStore } from "@/stores/use-workout-store";
 export default function WorkoutScreen() {
   const router = useRouter();
   const { dayId } = useLocalSearchParams<{ dayId?: string }>();
-  const insets = useSafeAreaInsets();
   const store = useWorkoutStore();
   const autoAdvance = useSettingsStore((s) => s.settings.autoAdvance);
   const hapticsEnabled = useSettingsStore((s) => s.settings.hapticsEnabled);
@@ -36,6 +35,7 @@ export default function WorkoutScreen() {
     activeExerciseId != null
       ? store.exercises.find((ex) => ex.exerciseId === activeExerciseId)
       : null;
+  const activeRestSeconds = activeExercise?.restSeconds;
   const elapsed = useElapsedSeconds(store.startedAt);
   const announce = useLiveWorkoutNotification({
     sessionId: store.sessionId,
@@ -57,9 +57,14 @@ export default function WorkoutScreen() {
     hapticsEnabled,
     onAdvance: setActiveExerciseId,
   });
-  const { finish, cancel, goBackOrToday } = useSessionExit();
-
-  const allDone = isSessionComplete(store.exercises);
+  const {
+    finish,
+    cancel,
+    confirmCancel,
+    dismissCancel,
+    askCancel,
+    goBackOrToday,
+  } = useSessionExit();
 
   const toggleActive = useCallback((exerciseId: string) => {
     setActiveExerciseId((current) =>
@@ -99,11 +104,7 @@ export default function WorkoutScreen() {
             {store.restTimerEndsAt != null && (
               <RestTimerBar
                 endsAt={store.restTimerEndsAt}
-                totalSeconds={
-                  activeExercise == null
-                    ? undefined
-                    : activeExercise.restSeconds
-                }
+                totalSeconds={activeRestSeconds}
                 nextName={nextName}
                 onSkip={skipRest}
               />
@@ -117,7 +118,9 @@ export default function WorkoutScreen() {
               onToggleSet={toggleSet}
             />
 
-            {allDone && autoAdvance && <SessionCompleteBanner />}
+            {isSessionComplete(store.exercises) && autoAdvance && (
+              <SessionCompleteBanner />
+            )}
 
             <EmptyStateCard
               hasExercises={store.exercises.length > 0}
@@ -128,20 +131,19 @@ export default function WorkoutScreen() {
       </ScrollView>
 
       {dayName != null && !isRest && (
-        // The keyboard can zero out the bottom inset, so keep a floor that
-        // still clears the gesture bar.
-        <View
-          className="border-t border-border bg-background px-4 pt-3"
-          style={{ paddingBottom: Math.max(insets.bottom, 20) + 20 }}
-        >
-          <WorkoutFooter
-            hasSession={store.sessionId != null}
-            hasExercises={store.exercises.length > 0}
-            canFinish={store.completedSets > 0}
-            onFinish={finish}
-          />
-        </View>
+        <WorkoutFooter
+          hasSession={store.sessionId != null}
+          hasExercises={store.exercises.length > 0}
+          canFinish={store.completedSets > 0}
+          onFinish={finish}
+        />
       )}
+
+      <CancelSessionSheet
+        visible={askCancel}
+        onConfirm={confirmCancel}
+        onClose={dismissCancel}
+      />
     </View>
   );
 }

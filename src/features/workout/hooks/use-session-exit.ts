@@ -1,6 +1,5 @@
 import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { Alert } from "react-native";
 import { useWorkoutSession } from "@/features/workout/hooks/use-workout-session";
 import { finishWorkout } from "@/features/workout/services/finish-workout";
 import { endLiveWorkout } from "@/services/live-workout";
@@ -16,6 +15,7 @@ export const useSessionExit = () => {
   const rolloverHour = useSettingsStore((s) => s.settings.rolloverHour);
   const sessionId = useWorkoutStore((s) => s.sessionId);
   const [finishing, setFinishing] = useState(false);
+  const [askCancel, setAskCancel] = useState(false);
 
   // The widget deep-links here on a cold start, where there is no screen to
   // go back to; fall back to the Today tab instead of leaving the app.
@@ -61,25 +61,23 @@ export const useSessionExit = () => {
     }
   }, [sessionId, finishing, session, rolloverHour, router, goBackOrToday]);
 
-  const cancel = useCallback(() => {
-    Alert.alert(
-      "Cancel this session?",
-      "Nothing logged so far will be saved.",
-      [
-        { text: "Keep going", style: "cancel" },
-        {
-          text: "Cancel session",
-          style: "destructive",
-          onPress: () => {
-            session.cancelSession();
-            endLiveWorkout();
-            syncTodayWidget(false).then(refreshWidgets);
-            goBackOrToday();
-          },
-        },
-      ],
-    );
+  const cancel = useCallback(() => setAskCancel(true), []);
+  const dismissCancel = useCallback(() => setAskCancel(false), []);
+
+  const confirmCancel = useCallback(() => {
+    setAskCancel(false);
+    session.cancelSession();
+    endLiveWorkout();
+    syncTodayWidget(false).then(refreshWidgets);
+    goBackOrToday();
   }, [session, goBackOrToday]);
 
-  return { finish, cancel, goBackOrToday };
+  return {
+    finish,
+    cancel,
+    confirmCancel,
+    dismissCancel,
+    askCancel,
+    goBackOrToday,
+  };
 };
